@@ -18,3 +18,19 @@ AGENTS.md
 
 # Experimental code/artifacts
 dev/
+
+# Medical AutoML specific
+data/*.bin
+data/*.pkl
+!data/.gitkeep
+run.log
+*.log
+results_*.tsv
+*.png
+*.npz
+
+# Model checkpoints
+checkpoints/
+*.pt
+*.pth
+*.ckpt
