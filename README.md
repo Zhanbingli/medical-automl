@@ -83,6 +83,18 @@ Reports comprehensive clinical metrics:
 
 **Configuration**: ASPECT_RATIO=48, DROPOUT=0.2, DEPTH=3
 
+## 📊 Results Visualization
+
+### ROC Curve Analysis
+![ROC Comparison Curve](assets/images/roc_comparison_curve.png)
+
+**Description**: The ROC (Receiver Operating Characteristic) curve demonstrates the model's diagnostic performance across different classification thresholds. The curve plots the True Positive Rate (Sensitivity) against the False Positive Rate (1-Specificity). Our optimized model achieves an **AUC of 0.941**, indicating excellent discrimination capability. The curve's proximity to the top-left corner shows the model's ability to maintain high sensitivity while minimizing false positives, crucial for clinical screening applications.
+
+### Automated Architecture Search Trajectory
+![Agent Search Trajectory](assets/images/agent_search_trajectory.png)
+
+**Description**: This visualization illustrates the autonomous AI agent's exploration process through the hyperparameter space. Each point represents an experimental configuration tested by the agent, with color coding indicating performance (darker = better AUC). The trajectory shows how the AI iteratively refines the model architecture, starting from baseline configurations and converging toward optimal parameters (ASPECT_RATIO=48, DROPOUT=0.2). The search pattern demonstrates effective exploration-exploitation balance, identifying high-performing regions within only 6-7 experiments.
+
 ## 🧪 Running Autonomous Experiments
 
 1. **Read agent instructions**:
