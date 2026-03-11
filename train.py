@@ -457,23 +457,23 @@ class MuonAdamW(torch.optim.Optimizer):
 # Hyperparameters (edit these directly, no CLI flags needed)
 # ---------------------------------------------------------------------------
 
-ASPECT_RATIO = 64
+ASPECT_RATIO = 32
 HEAD_DIM = 128
 WINDOW_PATTERN = "L"
 
 TOTAL_BATCH_SIZE = 2**16
-EMBEDDING_LR = 0.6
-UNEMBEDDING_LR = 0.004
-MATRIX_LR = 0.04
+EMBEDDING_LR = 0.3
+UNEMBEDDING_LR = 0.002
+MATRIX_LR = 0.02
 SCALAR_LR = 0.5
-WEIGHT_DECAY = 0.2
+WEIGHT_DECAY = 0.3
 ADAM_BETAS = (0.8, 0.95)
 WARMUP_RATIO = 0.0
 WARMDOWN_RATIO = 0.5
 FINAL_LR_FRAC = 0.0
-DROPOUT = 0.2
+DROPOUT = 0.3
 
-DEPTH = 4
+DEPTH = 3
 DEVICE_BATCH_SIZE = 16
 
 # ---------------------------------------------------------------------------
