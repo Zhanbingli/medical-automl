@@ -461,7 +461,7 @@ ASPECT_RATIO = 32
 HEAD_DIM = 128
 WINDOW_PATTERN = "L"
 
-TOTAL_BATCH_SIZE = 2**15
+TOTAL_BATCH_SIZE = 2**16
 EMBEDDING_LR = 0.3
 UNEMBEDDING_LR = 0.002
 MATRIX_LR = 0.02
@@ -474,14 +474,14 @@ FINAL_LR_FRAC = 0.0
 DROPOUT = 0.3
 
 DEPTH = 3
-DEVICE_BATCH_SIZE = 8
+DEVICE_BATCH_SIZE = 16
 
 # ---------------------------------------------------------------------------
 # Setup: tokenizer, model, optimizer, dataloader
 # ---------------------------------------------------------------------------
 
 t_start = time.time()
-torch.manual_seed(42)
+torch.manual_seed(123)
 if torch.cuda.is_available():
     torch.cuda.manual_seed(42)
 torch.set_float32_matmul_precision("high")
