@@ -481,7 +481,7 @@ DEVICE_BATCH_SIZE = 16
 # ---------------------------------------------------------------------------
 
 t_start = time.time()
-torch.manual_seed(123)
+torch.manual_seed(42)
 if torch.cuda.is_available():
     torch.cuda.manual_seed(42)
 torch.set_float32_matmul_precision("high")
