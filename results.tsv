@@ -1,0 +1,10 @@
+commit	val_acc	memory_gb	status	description
+bbda758	0.689655	0.0	discard	WEIGHT_DECAY 0.25 + DROPOUT 0.25 - worse
+38e66ad	0.689655	0.0	discard	width 192 + slower LR decay - worse
+5fea87c	0.758621	0.0	keep	dropout 0.25 matches best
+043d260	0.689655	0.0	discard	seed 123 - worse
+181b354	0.620690	0.0	discard	smaller batch size - worse
+bec45c4	0.689655	0.0	discard	dropout 0.4 - worse
+9c70b55	0.620690	0.0	discard	medium model dropout 0.25 - worse
+0f698f8	0.758621	0.0	keep	smaller model (depth=3, embed=128) with dropout 0.3 - BEST
+bcd3095	0.724138	0.0	keep	baseline with dropout 0.2

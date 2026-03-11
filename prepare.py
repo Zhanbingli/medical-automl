@@ -318,25 +318,28 @@ def make_dataloader(tokenizer, B, T, split, buffer_size=1000):
 # ---------------------------------------------------------------------------
 
 @torch.no_grad()
-def evaluate_accuracy(model, tokenizer, batch_size):
+def evaluate_clinical_metrics(model, tokenizer, batch_size):
     """
-    Calculate validation accuracy by predicting the final diagnosis token (0 or 1).
+    Calculate Validation Accuracy, AUC, Sensitivity, and Specificity
+    by analyzing the model's output probabilities.
     """
+    import numpy as np
+    from sklearn.metrics import roc_auc_score, confusion_matrix
+    import torch.nn.functional as F
+
     device = next(model.parameters()).device
     val_path = os.path.join(DATA_DIR, "val.bin")
-
     val_tokens = np.fromfile(val_path, dtype=np.int32).tolist()
 
-    diagnosis_tokens = {'0', '1', ' 0', ' 1'}
-    diagnosis_token_ids = set()
-    for dt in diagnosis_tokens:
-        try:
-            diagnosis_token_ids.add(tokenizer.enc.encode_single_token(dt))
-        except:
-            pass
+    # 获取数字 '1' 的 Token ID，用于提取患病概率
+    try:
+        token_id_1 = tokenizer.enc.encode_single_token('1')
+    except:
+        token_id_1 = tokenizer.enc.encode_ordinary('1')[-1]
 
-    correct = 0
-    total = 0
+    y_true = []
+    y_pred = []
+    y_prob = []
 
     current_doc = []
     for token_id in val_tokens:
@@ -349,26 +352,44 @@ def evaluate_accuracy(model, tokenizer, batch_size):
                     context = context[-MAX_SEQ_LEN:]
 
                 input_tensor = torch.tensor([context], dtype=torch.long, device=device)
-
                 logits = model(input_tensor)
+
+                # 计算属于 '1' (患病) 的概率
+                probs = F.softmax(logits[0, -1], dim=-1)
+                prob_1 = probs[token_id_1].item()
+
+                # 获取硬预测分类
                 pred_token = logits[0, -1].argmax().item()
 
-                if pred_token == last_token:
-                    correct += 1
-                total += 1
+                # 临床转化
+                actual_label = 1 if last_token == token_id_1 else 0
+                pred_label = 1 if pred_token == token_id_1 else 0
+
+                y_true.append(actual_label)
+                y_pred.append(pred_label)
+                y_prob.append(prob_1)
 
             current_doc = [token_id]
         else:
             current_doc.append(token_id)
 
-    if total == 0:
-        return 0.0
+    if len(y_true) == 0:
+        return 0.0, 0.0, 0.0, 0.0
 
-    accuracy = correct / total
-    print(f"Accuracy: {correct}/{total} = {accuracy:.6f}")
-    return accuracy
+    # 计算铁三角指标
+    accuracy = sum([1 for t, p in zip(y_true, y_pred) if t == p]) / len(y_true)
 
+    try:
+        auc = roc_auc_score(y_true, y_prob)
+    except ValueError:
+        auc = 0.5 # 防止 batch 里只有一个类别的极端情况
 
+    tn, fp, fn, tp = confusion_matrix(y_true, y_pred, labels=[0, 1]).ravel()
+    sensitivity = tp / (tp + fn) if (tp + fn) > 0 else 0.0
+    specificity = tn / (tn + fp) if (tn + fp) > 0 else 0.0
+
+    print(f"诊断混淆矩阵: 真阳性(TP)={tp}, 假阴性(漏诊/FN)={fn}, 真阴性(TN)={tn}, 假阳性(误诊/FP)={fp}")
+    return accuracy, auc, sensitivity, specificity
 # ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------

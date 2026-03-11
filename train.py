@@ -27,7 +27,7 @@ def verify_macos_env():
 
 verify_macos_env()
 
-from prepare import MAX_SEQ_LEN, TIME_BUDGET, Tokenizer, make_dataloader, evaluate_accuracy
+from prepare import MAX_SEQ_LEN, TIME_BUDGET, Tokenizer, make_dataloader, evaluate_clinical_metrics
 
 # ---------------------------------------------------------------------------
 # GPT Model
@@ -96,11 +96,11 @@ class CausalSelfAttention(nn.Module):
 
         k = k.repeat_interleave(self.n_head // self.n_kv_head, dim=2)
         v = v.repeat_interleave(self.n_head // self.n_kv_head, dim=2)
-        
+
         q = q.transpose(1, 2)
         k = k.transpose(1, 2)
         v = v.transpose(1, 2)
-        
+
         window = window_size[0]
         if window > 0 and window < T:
             mask = torch.ones(T, T, dtype=torch.bool, device=q.device).tril()
@@ -108,7 +108,7 @@ class CausalSelfAttention(nn.Module):
             y = F.scaled_dot_product_attention(q, k, v, attn_mask=mask)
         else:
             y = F.scaled_dot_product_attention(q, k, v, is_causal=True)
-            
+
         y = y.transpose(1, 2).contiguous().view(B, T, -1)
         y = self.c_proj(y)
         return y
@@ -320,7 +320,7 @@ def adamw_step_fused(p, grad, exp_avg, exp_avg_sq, step_t, lr_t, beta1_t, beta2_
     beta2_t = beta2_t.to(device=p.device, dtype=p.dtype)
     eps_t = eps_t.to(device=p.device, dtype=p.dtype)
     wd_t = wd_t.to(device=p.device, dtype=p.dtype)
-    
+
     p.mul_(1 - lr_t * wd_t)
     exp_avg.lerp_(grad, 1 - beta1_t)
     exp_avg_sq.lerp_(grad.square(), 1 - beta2_t)
@@ -359,10 +359,10 @@ def muon_step_fused(stacked_grads, stacked_params, momentum_buffer, second_momen
     red_dim_size = g.size(red_dim)
     v_norm_sq = v_mean.sum(dim=(-2, -1), keepdim=True) * red_dim_size
     v_norm = v_norm_sq.sqrt()
-    
+
     beta2_cast = beta2_t.to(second_momentum_buffer.dtype)
     second_momentum_buffer.lerp_(v_mean.to(dtype=second_momentum_buffer.dtype), 1 - beta2_cast)
-    
+
     step_size = second_momentum_buffer.clamp_min(1e-10).rsqrt()
     scaled_sq_sum = (v_mean * red_dim_size) * step_size.float().square()
     v_norm_new = scaled_sq_sum.sum(dim=(-2, -1), keepdim=True).sqrt()
@@ -389,7 +389,7 @@ class MuonAdamW(torch.optim.Optimizer):
         self._muon_lr_t = torch.tensor(0.0, dtype=torch.float32, device="cpu")
         self._muon_wd_t = torch.tensor(0.0, dtype=torch.float32, device="cpu")
         self._muon_beta2_t = torch.tensor(0.0, dtype=torch.float32, device="cpu")
-        
+
         compiler_kwargs = {"dynamic": False, "fullgraph": True}
         if device_type in ("cuda", "cpu"):
             self.adamw_step_fused = torch.compile(adamw_step_fused, **compiler_kwargs)
@@ -646,7 +646,7 @@ total_tokens = step * TOTAL_BATCH_SIZE
 
 model.eval()
 with autocast_ctx:
-    val_acc = evaluate_accuracy(model, tokenizer, DEVICE_BATCH_SIZE)
+    val_acc, val_auc, val_sens, val_spec = evaluate_clinical_metrics(model, tokenizer, DEVICE_BATCH_SIZE)
 
 t_end = time.time()
 startup_time = t_start_training - t_start
@@ -658,6 +658,9 @@ else:
 
 print("---")
 print(f"val_acc:          {val_acc:.6f}")
+print(f"val_auc:          {val_auc:.6f}")
+print(f"val_sens:         {val_sens:.6f}")
+print(f"val_spec:         {val_spec:.6f}")
 print(f"training_seconds: {total_training_time:.1f}")
 print(f"total_seconds:    {t_end - t_start:.1f}")
 print(f"peak_vram_mb:     {peak_vram_mb:.1f}")
