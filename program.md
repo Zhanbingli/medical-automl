@@ -1,115 +1,204 @@
-# Cardiovascular Disease Diagnosis Model
+# Medical AutoML - Clinical Research Protocol
 
-This is an experiment to train a medical text classification model using cardiovascular patient data.
+This document guides AI agents through autonomous experimentation for cardiovascular disease diagnosis optimization.
 
-## Setup
+## Project Overview
 
-To set up a new experiment, work with the user to:
+**Goal**: Develop an optimal transformer-based diagnostic model for cardiovascular disease using automated architecture search.
 
-1. **Agree on a run tag**: propose a tag based on today's date (e.g. `mar5`). The branch `autoresearch/<tag>` must not already exist — this is a fresh run.
-2. **Create the branch**: `git checkout -b autoresearch/<tag>` from current master.
-3. **Read the in-scope files**: The repo is small. Read these files for full context:
-   - `README.md` — repository context.
-   - `prepare.py` — data prep, tokenizer, dataloader, evaluation.
-   - `train.py` — the file you modify. Model architecture, optimizer, training loop.
-4. **Verify data exists**: Check that the `data/` directory contains train.bin, val.bin, and tokenizer.pkl. If not, tell the human to run `python prepare.py`.
-5. **Initialize results.tsv**: Create `results.tsv` with just the header row. The baseline will be recorded after the first run.
-6. **Confirm and go**: Confirm setup looks good.
+**Primary Metric**: `val_auc` (Area Under ROC Curve) - prioritizes clinical utility over raw accuracy.
 
-Once you get confirmation, kick off the experimentation.
+**Secondary Metrics**:
+- `val_acc` - Overall accuracy
+- `val_sens` - Sensitivity (minimize false negatives)
+- `val_spec` - Specificity (minimize false positives)
 
-## Experimentation
+## Experiment Setup
 
-Each experiment runs on a single GPU. The training script runs for a **fixed time budget of 5 minutes** (wall clock training time, excluding startup/compilation). You launch it simply as: `python train.py`.
+### 1. Branch Creation
+Create a new branch for each experimental series:
+```bash
+git checkout -b experiments/<date>-<focus>
+# Example: experiments/mar11-width-optimization
+```
 
-**What you CAN do:**
-- Modify `train.py` — this is the only file you edit. Everything is fair game: model architecture, optimizer, hyperparameters, training loop, batch size, model size, etc.
+### 2. Initial Setup Checklist
+- [ ] Read current `train.py` to understand the architecture
+- [ ] Verify data exists: `data/train.bin`, `data/val.bin`, `data/tokenizer.pkl`
+- [ ] Initialize results file: `results_clinical.tsv` with headers
+- [ ] Confirm current baseline metrics
 
-**What you CANNOT do:**
-- Modify `prepare.py`. It is read-only. It contains the fixed evaluation, data loading, tokenizer, and training constants (time budget, sequence length, etc).
-- Install new packages or add dependencies. You can only use what's already in `pyproject.toml`.
-- Modify the evaluation harness. The `evaluate_accuracy` function in `prepare.py` is the ground truth metric.
+### 3. Data Files
+- **Source**: `patients.csv` (303 cardiovascular patient records)
+- **Processed**: `data/train.bin`, `data/val.bin` (binary token sequences)
+- **Tokenizer**: `data/tokenizer.pkl` (BPE, 8K vocab)
 
-**The goal is simple: get the highest val_auc.** Since the time budget is fixed, you don't need to worry about training time — it's always 5 minutes. Everything is fair game: change the architecture, the optimizer, the hyperparameters, the batch size, the model size. The only constraint is that the code runs without crashing and finishes within the time budget.
+## Experimentation Guidelines
 
-**VRAM** is a soft constraint. Some increase is acceptable for meaningful val_acc gains, but it should not blow up dramatically.
+### What You CAN Modify
+Edit `train.py` freely:
+- Model architecture (depth, width, attention patterns)
+- Hyperparameters (learning rates, dropout, batch size)
+- Optimizer settings
+- Training procedures
 
-**Simplicity criterion**: All else being equal, simpler is better. A small improvement that adds ugly complexity is not worth it. Conversely, removing something and getting equal or better results is a great outcome — that's a simplification win. When evaluating whether to keep a change, weigh the complexity cost against the improvement magnitude. A 0.001 val_acc improvement that adds 20 lines of hacky code? Probably not worth it. A 0.001 val_acc improvement from deleting code? Definitely keep. An improvement of ~0 but much simpler code? Keep.
+### Constraints
+- **Time Budget**: 5 minutes wall-clock training
+- **Evaluation**: Fixed clinical metrics in `prepare.py`
+- **Dependencies**: Only use packages in `pyproject.toml`
 
-**The first run**: Your very first run should always be to establish the baseline, so you will run the training script as is.
+### Success Criteria
+1. **Primary**: Maximize `val_auc`
+2. **Clinical Balance**: Maintain reasonable sensitivity/specificity trade-off
+3. **Stability**: Results should be reproducible
 
-## Output format
+## Workflow
 
-Once the script finishes it prints a summary like this:
+### Phase 1: Baseline
+Always start by running the current configuration:
+```bash
+python train.py > run.log 2>&1
+```
+
+Extract results:
+```bash
+grep "^val_auc:\|^val_acc:\|^val_sens:\|^val_spec:" run.log
+```
+
+### Phase 2: Iterative Improvement
+
+**LOOP**:
+1. Propose a hypothesis (e.g., "increasing width improves AUC")
+2. Modify `train.py` with specific changes
+3. Commit: `git commit -m "Exp: <description>"`
+4. Run: `python train.py > run.log 2>&1`
+5. Extract metrics and compare
+
+**Decision**:
+- If `val_auc` improves → Keep commit, continue
+- If `val_auc` decreases or equal → `git reset --hard HEAD~1`
+
+### Phase 3: Logging
+
+Record all experiments in `results_clinical.tsv`:
 
 ```
+commit	val_auc	val_acc	memory_gb	status	description
+abc1234	0.941176	0.827586	0.0	keep	baseline
+xyz5678	0.950000	0.850000	0.0	keep	increased learning rate
+```
+
+Columns:
+1. `commit`: Short git hash (7 chars)
+2. `val_auc`: Primary metric
+3. `val_acc`: Secondary metric
+4. `memory_gb`: Peak VRAM in GB
+5. `status`: `keep`, `discard`, or `crash`
+6. `description`: Brief experimental change
+
+## Architecture Design Space
+
+### Model Dimensions
+- **DEPTH**: Number of transformer layers (typically 3-8)
+- **ASPECT_RATIO**: Controls model width (typically 32-64)
+- **HEAD_DIM**: Attention head dimension (typically 64-128)
+
+### Key Hyperparameters
+```python
+ASPECT_RATIO = 48      # Model width factor
+HEAD_DIM = 128         # Per-head dimension
+DROPOUT = 0.2          # Regularization
+DEPTH = 3              # Layer count
+
+# Learning rates
+EMBEDDING_LR = 0.3
+UNEMBEDDING_LR = 0.002
+MATRIX_LR = 0.025
+SCALAR_LR = 0.5
+```
+
+### Optimization Strategies
+- Muon optimizer for 2D parameters
+- AdamW for embeddings and scalars
+- Learning rate warmup/warmdown
+- Weight decay scheduling
+
+## Clinical Considerations
+
+### Why AUC over Accuracy?
+In medical diagnosis:
+- **Sensitivity** (recall): Missing sick patients is costly
+- **Specificity**: False alarms waste resources
+- **AUC**: Balances both across all thresholds
+
+### Target Performance
+- **AUC > 0.90**: Excellent discrimination
+- **Sensitivity > 0.80**: Catch most true cases
+- **Specificity > 0.80**: Avoid excessive false positives
+
+## Best Practices
+
+### Hypothesis Formation
+- Start with architectural changes (depth, width)
+- Then tune regularization (dropout)
+- Finally optimize learning rates
+
+### Change Magnitude
+- Make small, isolated changes
+- One variable at a time when possible
+- Document expected vs. actual outcomes
+
+### Failure Recovery
+If a run crashes:
+1. Check `run.log` for stack traces
+2. Simple typos → fix and retry
+3. Fundamental flaws → discard and revert
+
+## Current Best Configuration
+
+```python
+ASPECT_RATIO = 48
+DROPOUT = 0.2
+DEPTH = 3
+
+# Achieved: val_auc = 0.941176
+#           val_acc = 0.827586
+#           val_sens = 0.823529
+#           val_spec = 1.000000
+```
+
+Use this as your optimization starting point.
+
+## Advanced Techniques
+
+### Architecture Patterns
+- **Window Patterns**: Try "SSSL", "SL", "L" for attention
+- **GQA**: Grouped Query Attention for efficiency
+- **VE (Value Embeddings)**: Alternating layer enhancement
+
+### Hyperparameter Search
+- Grid search learning rates in [0.001, 0.1]
+- Bayesian optimization for architecture
+- Population-based training
+
+### Diagnostic Tools
+Check model behavior:
+- Confusion matrix breakdown
+- ROC curve analysis
+- Calibration metrics
+
+## Notes
+
+- **Platform**: Optimized for Apple Silicon (MPS) and NVIDIA GPUs
+- **Time Budget**: Fixed at 300 seconds regardless of hardware
+- **Reproducibility**: Set `torch.manual_seed(42)` for consistency
+
+## References
+
+- Transformer architecture: Vaswani et al. (2017)
+- Muon optimizer: Distributed Shampoo variants
+- Clinical metrics: Sensitivity, Specificity, AUC interpretation
+
 ---
-val_acc:          0.854000
-training_seconds: 300.1
-total_seconds:    325.9
-peak_vram_mb:     45060.2
-mfu_percent:      39.80
-total_tokens_M:   499.6
-num_steps:        953
-num_params_M:     50.3
-depth:            8
-```
 
-Note that the script is configured to always stop after 5 minutes, so depending on the computing platform of this computer the numbers might look different. You can extract the key metric from the log file:
-
-```
-grep "^val_acc:\|^val_auc:\|^val_sens:\|^val_spec:\|^peak_vram_mb:" run.log
-```
-
-## Logging results
-
-When an experiment is done, log it to `results.tsv` (tab-separated, NOT comma-separated — commas break in descriptions).
-
-The TSV has a header row and 5 columns:
-
-```
-commit	val_auc val_acc	memory_gb	status	description
-```
-
-1. git commit hash (short, 7 chars)
-2. val_auc achieved (e.g. 0.845000) — this is the PRIMARY target metric.
-3. val_acc achieved (e.g. 0.854000) — use 0.000000 for crashes
-4. peak memory in GB, round to .1f (e.g. 12.3 — divide peak_vram_mb by 1024) — use 0.0 for crashes
-5. status: `keep`, `discard`, or `crash`
-6. short text description of what this experiment tried
-
-Example:
-
-```
-commit	val_auc val_acc	memory_gb	status	description
-a1b2c3d	0.880000 0.854000	44.0	keep	baseline
-b2c3d4e	0.871234 0.862000	44.2	keep	increase LR to 0.04
-c3d4e5f	0.673456 0.845000	44.0	discard	switch to GeLU activation
-d4e5f6g	0.000000 0.000000	0.0	crash	double model width (OOM)
-```
-
-## The experiment loop
-
-The experiment runs on a dedicated branch (e.g. `autoresearch/mar5` or `autoresearch/mar5-gpu0`).
-
-LOOP FOREVER:
-
-1. Look at the git state: the current branch/commit we're on
-2. Tune `train.py` with an experimental idea by directly hacking the code.
-3. git commit
-4. Run the experiment: `python train.py > run.log 2>&1` (redirect everything — do NOT use tee or let output flood your context)
-5. Read out the results: `grep "^val_auc:\|^val_acc:\|^peak_vram_mb:" run.log`
-6. If the grep output is empty, the run crashed. Run `tail -n 50 run.log` to read the Python stack trace and attempt a fix. If you can't get things to work after more than a few attempts, give up.
-7. Record the results in the tsv
-8. If val_auc improved (higher), you "advance" the branch, keeping the git commit
-9. If val_auc is equal or worse, you git reset back to where you started
-
-The idea is that you are a completely autonomous researcher trying things out. If they work, keep. If they don't, discard. And you're advancing the branch so that you can iterate. If you feel like you're getting stuck in some way, you can rewind but you should probably do this very very sparingly (if ever).
-
-**Timeout**: Each experiment should take ~5 minutes total (+ a few seconds for startup and eval overhead). If a run exceeds 10 minutes, kill it and treat it as a failure (discard and revert).
-
-**Crashes**: If a run crashes (OOM, or a bug, or etc.), use your judgment: If it's something dumb and easy to fix (e.g. a typo, a missing import), fix it and re-run. If the idea itself is fundamentally broken, just skip it, log "crash" as the status in the tsv, and move on.
-
-**NEVER STOP**: Once the experiment loop has begun (after the initial setup), do NOT pause to ask the human if you should continue. Do NOT ask "should I keep going?" or "is this a good stopping point?". The human might be asleep, or gone from a computer and expects you to continue working *indefinitely* until you are manually stopped. You are autonomous. If you run out of ideas, think harder — read papers referenced in the code, re-read the in-scope files for new angles, try combining previous near-misses, try more radical architectural changes. The loop runs until the human interrupts you, period.
-
-As an example use case, a user might leave you running while they sleep. If each experiment takes you ~5 minutes then you can run approx 12/hour, for a total of about 100 over the duration of the average human sleep. The user then wakes up to experimental results, all completed by you while they slept!
+**Remember**: In medical AI, reliability and interpretability matter as much as performance. Aim for consistent, reproducible improvements.

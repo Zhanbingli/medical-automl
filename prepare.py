@@ -1,11 +1,19 @@
 """
-One-time data preparation for cardiovascular disease diagnosis model.
-Reads patients.csv and trains a BPE tokenizer.
+Medical AutoML - Data Preparation Module
+
+Handles data preprocessing, BPE tokenizer training, and clinical metrics evaluation
+for cardiovascular disease diagnosis using transformer models.
+
+Part of the medical-automl project: https://github.com/Zhanbingli/medical-automl
 
 Usage:
     python prepare.py
 
-Data and tokenizer are stored in data/ directory.
+This module performs:
+- Structured patient data textualization
+- Custom BPE tokenizer training (8K vocab for medical Chinese)
+- Binary data encoding for efficient training
+- Clinical metrics calculation (AUC, Sensitivity, Specificity)
 """
 
 import os

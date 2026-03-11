@@ -1,7 +1,18 @@
 """
-Autoresearch pretraining script. Single-GPU, single-file.
-Cherry-picked and simplified from nanochat.
+Medical AutoML - Transformer Training Module
+
+GPT-style transformer architecture with Muon optimizer for cardiovascular
+disease diagnosis. Optimized for rapid experimentation on Apple Silicon and NVIDIA GPUs.
+
+Part of the medical-automl project: https://github.com/Zhanbingli/medical-automl
+
 Usage: uv run train.py
+
+Architecture highlights:
+- GPT-style decoder-only transformer with rotary embeddings
+- Muon optimizer for efficient 2D parameter updates
+- Sliding window attention patterns
+- Mixed precision training (bfloat16)
 """
 
 import os
