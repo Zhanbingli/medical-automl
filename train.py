@@ -457,7 +457,7 @@ class MuonAdamW(torch.optim.Optimizer):
 # Hyperparameters (edit these directly, no CLI flags needed)
 # ---------------------------------------------------------------------------
 
-ASPECT_RATIO = 32
+ASPECT_RATIO = 48
 HEAD_DIM = 128
 WINDOW_PATTERN = "L"
 
