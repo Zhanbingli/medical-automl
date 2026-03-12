@@ -27,6 +27,8 @@ import numpy as np
 import rustbpe
 import tiktoken
 import torch
+from sklearn.model_selection import StratifiedKFold
+import numpy as np
 
 def verify_macos_env():
     import sys
@@ -235,13 +237,21 @@ class Tokenizer:
 
 
 def _document_batches(split, tokenizer_batch_size=128):
-    """Infinite iterator over document batches from binary files."""
-    train_path = os.path.join(DATA_DIR, "train.bin")
-    val_path = os.path.join(DATA_DIR, "val.bin")
-
-    assert os.path.exists(train_path) and os.path.exists(val_path), "Data files not found. Run prepare.py first."
-
-    data_path = train_path if split == "train" else val_path
+    """Infinite iterator over document batches from binary files.
+    
+    Supports both regular splits ("train", "val") and K-fold splits ("train_fold0", "val_fold0", etc.)
+    """
+    # Check if this is a K-fold split
+    if "_fold" in split:
+        # Parse fold number from split name (e.g., "train_fold0" -> "train_fold0.bin")
+        data_path = os.path.join(DATA_DIR, f"{split}.bin")
+    else:
+        # Regular split
+        train_path = os.path.join(DATA_DIR, "train.bin")
+        val_path = os.path.join(DATA_DIR, "val.bin")
+        data_path = train_path if split == "train" else val_path
+    
+    assert os.path.exists(data_path), f"Data file not found: {data_path}. Run prepare.py or prepare_kfold.py first."
 
     tokens = np.fromfile(data_path, dtype=np.int32).tolist()
     epoch = 1
@@ -264,8 +274,16 @@ def _document_batches(split, tokenizer_batch_size=128):
 def make_dataloader(tokenizer, B, T, split, buffer_size=1000):
     """
     BOS-aligned dataloader with best-fit packing.
+    
+    Supports both regular splits ("train", "val") and K-fold splits ("train_fold0", "val_fold0", etc.)
     """
-    assert split in ["train", "val"]
+    # Support regular splits and K-fold splits
+    valid_splits = ["train", "val"]
+    for i in range(10):
+        valid_splits.append("train_fold" + str(i))
+        valid_splits.append("val_fold" + str(i))
+    if split not in valid_splits:
+        raise ValueError("Invalid split: " + split + ". Must be 'train', 'val', or K-fold split like 'train_fold0'")
     row_capacity = T + 1
     global bos_token_id
     bos_token_id = tokenizer.get_bos_token_id()
