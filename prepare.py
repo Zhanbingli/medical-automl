@@ -238,7 +238,7 @@ class Tokenizer:
 
 def _document_batches(split, tokenizer_batch_size=128):
     """Infinite iterator over document batches from binary files.
-    
+
     Supports both regular splits ("train", "val") and K-fold splits ("train_fold0", "val_fold0", etc.)
     """
     # Check if this is a K-fold split
@@ -250,7 +250,7 @@ def _document_batches(split, tokenizer_batch_size=128):
         train_path = os.path.join(DATA_DIR, "train.bin")
         val_path = os.path.join(DATA_DIR, "val.bin")
         data_path = train_path if split == "train" else val_path
-    
+
     assert os.path.exists(data_path), f"Data file not found: {data_path}. Run prepare.py or prepare_kfold.py first."
 
     tokens = np.fromfile(data_path, dtype=np.int32).tolist()
@@ -274,7 +274,7 @@ def _document_batches(split, tokenizer_batch_size=128):
 def make_dataloader(tokenizer, B, T, split, buffer_size=1000):
     """
     BOS-aligned dataloader with best-fit packing.
-    
+
     Supports both regular splits ("train", "val") and K-fold splits ("train_fold0", "val_fold0", etc.)
     """
     # Support regular splits and K-fold splits
@@ -344,7 +344,7 @@ def make_dataloader(tokenizer, B, T, split, buffer_size=1000):
 # ---------------------------------------------------------------------------
 
 @torch.no_grad()
-def evaluate_clinical_metrics(model, tokenizer, batch_size):
+def evaluate_clinical_metrics(model, tokenizer, batch_size, split_name="val"):
     """
     Calculate Validation Accuracy, AUC, Sensitivity, and Specificity
     by analyzing the model's output probabilities.

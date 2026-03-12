@@ -6,7 +6,7 @@ This document guides AI agents through autonomous experimentation for cardiovasc
 
 **Goal**: Develop an optimal transformer-based diagnostic model for cardiovascular disease using automated architecture search.
 
-**Primary Metric**: `val_auc` (Area Under ROC Curve) - prioritizes clinical utility over raw accuracy.
+**Primary Metric**: `val_auc_mean` (Area Under ROC Curve) - prioritizes clinical utility over raw accuracy.
 
 **Secondary Metrics**:
 - `val_acc` - Overall accuracy
@@ -57,12 +57,12 @@ Edit `train.py` freely:
 ### Phase 1: Baseline
 Always start by running the current configuration:
 ```bash
-python train.py > run.log 2>&1
+python train_kfold.py > run.log 2>&1
 ```
 
 Extract results:
 ```bash
-grep "^val_auc:\|^val_acc:\|^val_sens:\|^val_spec:" run.log
+grep "^val_auc_mean:\|^val_acc_mean:\|^val_sens_mean:\|^val_spec_mean:" run.log
 ```
 
 ### Phase 2: Iterative Improvement

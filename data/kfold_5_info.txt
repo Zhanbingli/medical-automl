@@ -1,0 +1,12 @@
+K-Fold Cross Validation Information
+============================================================
+
+K=5, Seed=42
+Total samples: 303
+
+Fold Distribution:
+  Fold 0: Train=242, Val=61
+  Fold 1: Train=242, Val=61
+  Fold 2: Train=242, Val=61
+  Fold 3: Train=243, Val=60
+  Fold 4: Train=243, Val=60
