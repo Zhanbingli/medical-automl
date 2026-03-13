@@ -47,6 +47,7 @@ medical-automl/
 ├── train_kfold.py                  # K-fold cross validation training
 ├── run_baseline_sota.py            # SOTA baseline comparison (5-fold CV)
 ├── visualize_baselines_5fold.py    # 5-fold CV baseline visualization
+├── statistical_tests.py            # Statistical significance testing
 ├── program.md                      # Agent instructions for autonomous experimentation
 ├── KFOLD_GUIDE.md                  # Detailed K-fold documentation
 ├── BASELINE_GUIDE.md               # Baseline comparison guide
@@ -153,6 +154,32 @@ uv run python visualize_baselines_5fold.py
 - Fold-by-fold consistency visualization
 - Statistical ranking and significance
 - JSON results for reproducibility
+
+### Statistical Significance Testing
+
+After running baseline comparison, perform statistical tests to validate significance:
+
+```bash
+# Run Wilcoxon signed-rank tests (paired 5-fold results)
+uv run python statistical_tests.py
+```
+
+**Features**:
+- Wilcoxon signed-rank test for paired 5-fold AUC results
+- Effect size calculation (rank-biserial correlation *r*)
+- Bootstrap 95% confidence intervals (10,000 samples)
+- Automatic comparison with all baselines
+- LaTeX table generation for papers
+
+**Output**:
+- Console table with p-values and effect sizes
+- `statistical_tests_results.json` - detailed results
+- `statistical_tests_table.tex` - LaTeX table for papers
+
+**Interpretation**:
+- p < 0.05: Statistically significant difference
+- Effect size |r|: <0.1 negligible, <0.3 small, <0.5 medium, ≥0.5 large
+- 95% CI: Bootstrap confidence interval for mean AUC difference
 
 ## 🧪 Running Autonomous Experiments
 
