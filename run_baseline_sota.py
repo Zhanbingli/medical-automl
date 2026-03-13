@@ -1,13 +1,13 @@
 """
 Medical AutoML - Comprehensive Baseline Comparison (5-Fold Cross Validation)
 
-Compares SOTA deep learning models (TabNet, ResNet, MLP) 
-with traditional ML baselines (Random Forest, XGBoost) for cardiovascular 
+Compares SOTA deep learning models (TabNet, ResNet, MLP)
+with traditional ML baselines (Random Forest, XGBoost) for cardiovascular
 disease diagnosis using 5-Fold Cross Validation for fair comparison.
 
 Usage: uv run python run_baseline_sota.py
 
-All models use the same 5-fold splits (seed=42) for fair comparison with 
+All models use the same 5-fold splits (seed=42) for fair comparison with
 the Transformer model trained via train_kfold.py.
 """
 
@@ -67,11 +67,11 @@ def calculate_clinical_metrics(y_true, y_pred, y_prob):
     """Calculate clinical-grade metrics: Acc, AUC, Sensitivity, Specificity."""
     acc = accuracy_score(y_true, y_pred)
     auc = roc_auc_score(y_true, y_prob)
-    
+
     tn, fp, fn, tp = confusion_matrix(y_true, y_pred).ravel()
     sensitivity = tp / (tp + fn) if (tp + fn) > 0 else 0.0
     specificity = tn / (tn + fp) if (tn + fp) > 0 else 0.0
-    
+
     return {
         'accuracy': acc,
         'auc': auc,
@@ -98,7 +98,7 @@ class MLP(nn.Module):
             prev_dim = hidden_dim
         layers.append(nn.Linear(prev_dim, 2))
         self.network = nn.Sequential(*layers)
-    
+
     def forward(self, x):
         return self.network(x)
 
@@ -114,7 +114,7 @@ class ResNetBlock(nn.Module):
             nn.Dropout(dropout),
             nn.BatchNorm1d(dim)
         )
-    
+
     def forward(self, x):
         return F.relu(x + self.net(x))
 
@@ -127,7 +127,7 @@ class ResNet(nn.Module):
             ResNetBlock(hidden_dim, dropout) for _ in range(num_blocks)
         ])
         self.output_layer = nn.Linear(hidden_dim, 2)
-    
+
     def forward(self, x):
         x = F.relu(self.input_layer(x))
         for block in self.blocks:
@@ -137,20 +137,20 @@ class ResNet(nn.Module):
 def train_pytorch_model(model_class, model_kwargs, X_train, y_train, X_val, y_val, device):
     """Train PyTorch model with early stopping."""
     model = model_class(**model_kwargs).to(device)
-    
+
     # Convert to tensors
     X_train_t = torch.FloatTensor(X_train).to(device)
     y_train_t = torch.LongTensor(y_train).to(device)
     X_val_t = torch.FloatTensor(X_val).to(device)
-    
+
     optimizer = torch.optim.Adam(model.parameters(), lr=0.001, weight_decay=1e-5)
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, patience=10, factor=0.5)
     criterion = nn.CrossEntropyLoss()
-    
+
     best_auc = 0
     patience_counter = 0
     batch_size = 32
-    
+
     for epoch in range(200):
         model.train()
         permutation = torch.randperm(X_train_t.size(0))
@@ -162,7 +162,7 @@ def train_pytorch_model(model_class, model_kwargs, X_train, y_train, X_val, y_va
             loss = criterion(outputs, batch_y)
             loss.backward()
             optimizer.step()
-        
+
         # Validation
         model.eval()
         with torch.no_grad():
@@ -170,19 +170,19 @@ def train_pytorch_model(model_class, model_kwargs, X_train, y_train, X_val, y_va
             val_probs = F.softmax(val_outputs, dim=1)[:, 1].cpu().numpy()
             val_preds = val_outputs.argmax(dim=1).cpu().numpy()
             current_auc = roc_auc_score(y_val, val_probs)
-        
+
         if current_auc > best_auc:
             best_auc = current_auc
             patience_counter = 0
             best_state = model.state_dict().copy()
         else:
             patience_counter += 1
-        
+
         scheduler.step(1 - current_auc)
-        
+
         if patience_counter >= 20:
             break
-    
+
     # Load best model and return predictions
     model.load_state_dict(best_state)
     model.eval()
@@ -190,7 +190,7 @@ def train_pytorch_model(model_class, model_kwargs, X_train, y_train, X_val, y_va
         val_outputs = model(X_val_t)
         val_probs = F.softmax(val_outputs, dim=1)[:, 1].cpu().numpy()
         val_preds = val_outputs.argmax(dim=1).cpu().numpy()
-    
+
     return val_preds, val_probs
 
 # =============================================================================
@@ -226,18 +226,18 @@ for fold_idx, (train_idx, val_idx) in enumerate(skf.split(X, y)):
     print(f"\n{'='*80}")
     print(f"Fold {fold_idx + 1}/{K_FOLDS}")
     print(f"{'='*80}")
-    
+
     # Split data
     X_train, X_val = X.iloc[train_idx], X.iloc[val_idx]
     y_train, y_val = y.iloc[train_idx], y.iloc[val_idx]
-    
+
     print(f"  Train: {len(X_train)}, Val: {len(X_val)}")
-    
+
     # Standardize (fit on train, transform both)
     scaler = StandardScaler()
     X_train_scaled = scaler.fit_transform(X_train)
     X_val_scaled = scaler.transform(X_val)
-    
+
     # 1. Random Forest
     print("  Training Random Forest...")
     rf = RandomForestClassifier(n_estimators=200, max_depth=10, random_state=RANDOM_STATE, n_jobs=-1)
@@ -245,16 +245,16 @@ for fold_idx, (train_idx, val_idx) in enumerate(skf.split(X, y)):
     rf_preds = rf.predict(X_val)
     rf_probs = rf.predict_proba(X_val)[:, 1]
     all_results['Random Forest'].append(calculate_clinical_metrics(y_val, rf_preds, rf_probs))
-    
+
     # 2. XGBoost
     print("  Training XGBoost...")
-    xgb = XGBClassifier(n_estimators=200, max_depth=6, learning_rate=0.1, 
+    xgb = XGBClassifier(n_estimators=200, max_depth=6, learning_rate=0.1,
                         use_label_encoder=False, eval_metric='logloss', random_state=RANDOM_STATE)
     xgb.fit(X_train, y_train)
     xgb_preds = xgb.predict(X_val)
     xgb_probs = xgb.predict_proba(X_val)[:, 1]
     all_results['XGBoost'].append(calculate_clinical_metrics(y_val, xgb_preds, xgb_probs))
-    
+
     # 3. Logistic Regression
     print("  Training Logistic Regression...")
     lr = LogisticRegression(max_iter=1000, random_state=RANDOM_STATE)
@@ -262,7 +262,7 @@ for fold_idx, (train_idx, val_idx) in enumerate(skf.split(X, y)):
     lr_preds = lr.predict(X_val_scaled)
     lr_probs = lr.predict_proba(X_val_scaled)[:, 1]
     all_results['Logistic Regression'].append(calculate_clinical_metrics(y_val, lr_preds, lr_probs))
-    
+
     # 4. SVM
     print("  Training SVM (RBF)...")
     svm = SVC(probability=True, kernel='rbf', random_state=RANDOM_STATE)
@@ -270,7 +270,7 @@ for fold_idx, (train_idx, val_idx) in enumerate(skf.split(X, y)):
     svm_preds = svm.predict(X_val_scaled)
     svm_probs = svm.predict_proba(X_val_scaled)[:, 1]
     all_results['SVM (RBF)'].append(calculate_clinical_metrics(y_val, svm_preds, svm_probs))
-    
+
     # 5. Gradient Boosting
     print("  Training Gradient Boosting...")
     gb = GradientBoostingClassifier(n_estimators=200, max_depth=5, random_state=RANDOM_STATE)
@@ -278,7 +278,7 @@ for fold_idx, (train_idx, val_idx) in enumerate(skf.split(X, y)):
     gb_preds = gb.predict(X_val)
     gb_probs = gb.predict_proba(X_val)[:, 1]
     all_results['Gradient Boosting'].append(calculate_clinical_metrics(y_val, gb_preds, gb_probs))
-    
+
     # 6. MLP
     print("  Training MLP...")
     input_dim = X_train.shape[1]
@@ -287,7 +287,7 @@ for fold_idx, (train_idx, val_idx) in enumerate(skf.split(X, y)):
         X_train_scaled, y_train.values, X_val_scaled, y_val.values, device
     )
     all_results['MLP (Deep)'].append(calculate_clinical_metrics(y_val, mlp_preds, mlp_probs))
-    
+
     # 7. ResNet
     print("  Training ResNet...")
     resnet_preds, resnet_probs = train_pytorch_model(
@@ -295,7 +295,7 @@ for fold_idx, (train_idx, val_idx) in enumerate(skf.split(X, y)):
         X_train_scaled, y_train.values, X_val_scaled, y_val.values, device
     )
     all_results['ResNet (Tabular)'].append(calculate_clinical_metrics(y_val, resnet_preds, resnet_probs))
-    
+
     # 8. TabNet
     if TABNET_AVAILABLE:
         print("  Training TabNet...")
@@ -388,13 +388,13 @@ print(f"   Specificity: {best_model[1]['specificity']['mean']:.4f} ± {best_mode
 print("\n" + "=" * 80)
 print("COMPARISON WITH YOUR TRANSFORMER MODEL")
 print("=" * 80)
-print("Transformer (from train_kfold.py): AUC = 0.910 ± 0.021")
+print("Transformer (from train_kfold.py): AUC = 0.948 ± 0.050")
 best_auc_mean = best_model[1]['auc']['mean']
 best_auc_std = best_model[1]['auc']['std']
 print(f"Best Baseline ({best_model[0]}):     AUC = {best_auc_mean:.3f} ± {best_auc_std:.3f}")
 
 # Statistical comparison
-diff = 0.910 - best_auc_mean
+diff = 0.948 - best_auc_mean
 if abs(diff) < 0.02:
     print(f"\n✅ Your Transformer is COMPARABLE to best baseline (diff: {diff:+.3f})")
 elif diff > 0:
@@ -409,7 +409,7 @@ results_dict = {
     'individual_results': all_results,
     'summary': summary,
     'transformer_comparison': {
-        'transformer_auc': '0.910 ± 0.021',
+        'transformer_auc': '0.948 ± 0.050',
         'best_baseline': best_model[0],
         'best_baseline_auc': f"{best_auc_mean:.4f} ± {best_auc_std:.4f}"
     }

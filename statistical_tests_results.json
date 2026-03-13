@@ -1,0 +1,257 @@
+{
+  "test_method": "Paired t-test",
+  "alternative_hypothesis": "two-sided",
+  "confidence_level": 0.95,
+  "n_folds": 5,
+  "transformer_summary": {
+    "mean_auc": 0.9480392156862745,
+    "std_auc": 0.049951918442576446,
+    "folds": [
+      1.0,
+      0.9950980392156863,
+      0.9509803921568628,
+      0.8627450980392157,
+      0.9313725490196079
+    ]
+  },
+  "comparisons": {
+    "Random Forest": {
+      "transformer_mean": 0.9480392156862745,
+      "baseline_mean": 0.8947007275132275,
+      "mean_difference": 0.05333848817304705,
+      "t_statistic": 2.2058506662852535,
+      "p_value": 0.09205051820480926,
+      "significance": "n.s.",
+      "cohens_d": 0.9864864076054058,
+      "effect_size_interpretation": "Large",
+      "confidence_interval_95": {
+        "lower": -0.01379723713699825,
+        "upper": 0.12047421348309235
+      },
+      "interpretation": "No significant difference",
+      "transformer_folds": [
+        1.0,
+        0.9950980392156863,
+        0.9509803921568628,
+        0.8627450980392157,
+        0.9313725490196079
+      ],
+      "baseline_folds": [
+        0.9553571428571429,
+        0.9006696428571428,
+        0.829861111111111,
+        0.8721064814814815,
+        0.9155092592592592
+      ]
+    },
+    "XGBoost": {
+      "transformer_mean": 0.9480392156862745,
+      "baseline_mean": 0.8670552248677248,
+      "mean_difference": 0.08098399081854968,
+      "t_statistic": 4.515072346024274,
+      "p_value": 0.010698504734319412,
+      "significance": "*",
+      "cohens_d": 2.0192017378079457,
+      "effect_size_interpretation": "Large",
+      "confidence_interval_95": {
+        "lower": 0.03118465480003954,
+        "upper": 0.13078332683705982
+      },
+      "interpretation": "Marginally significant",
+      "transformer_folds": [
+        1.0,
+        0.9950980392156863,
+        0.9509803921568628,
+        0.8627450980392157,
+        0.9313725490196079
+      ],
+      "baseline_folds": [
+        0.9486607142857143,
+        0.8738839285714286,
+        0.8229166666666666,
+        0.8159722222222222,
+        0.8738425925925926
+      ]
+    },
+    "Logistic Regression": {
+      "transformer_mean": 0.9480392156862745,
+      "baseline_mean": 0.8937003968253968,
+      "mean_difference": 0.05433881886087773,
+      "t_statistic": 2.4844899684437434,
+      "p_value": 0.06788374208457264,
+      "significance": "n.s.",
+      "cohens_d": 1.1110976917713034,
+      "effect_size_interpretation": "Large",
+      "confidence_interval_95": {
+        "lower": -0.0063854141063482625,
+        "upper": 0.11506305182810372
+      },
+      "interpretation": "No significant difference",
+      "transformer_folds": [
+        1.0,
+        0.9950980392156863,
+        0.9509803921568628,
+        0.8627450980392157,
+        0.9313725490196079
+      ],
+      "baseline_folds": [
+        0.9386160714285714,
+        0.9118303571428572,
+        0.8344907407407407,
+        0.8587962962962963,
+        0.9247685185185185
+      ]
+    },
+    "SVM (RBF)": {
+      "transformer_mean": 0.9480392156862745,
+      "baseline_mean": 0.8919766865079364,
+      "mean_difference": 0.05606252917833807,
+      "t_statistic": 2.147946626499392,
+      "p_value": 0.09820762601517836,
+      "significance": "n.s.",
+      "cohens_d": 0.9605909337787985,
+      "effect_size_interpretation": "Large",
+      "confidence_interval_95": {
+        "lower": -0.01640413866241871,
+        "upper": 0.12852919701909485
+      },
+      "interpretation": "No significant difference",
+      "transformer_folds": [
+        1.0,
+        0.9950980392156863,
+        0.9509803921568628,
+        0.8627450980392157,
+        0.9313725490196079
+      ],
+      "baseline_folds": [
+        0.9363839285714285,
+        0.9123883928571428,
+        0.8159722222222222,
+        0.8738425925925926,
+        0.9212962962962963
+      ]
+    },
+    "Gradient Boosting": {
+      "transformer_mean": 0.9480392156862745,
+      "baseline_mean": 0.8445601851851852,
+      "mean_difference": 0.10347903050108934,
+      "t_statistic": 3.91758351889291,
+      "p_value": 0.01728286667915055,
+      "significance": "*",
+      "cohens_d": 1.7519966111554757,
+      "effect_size_interpretation": "Large",
+      "confidence_interval_95": {
+        "lower": 0.030142024068472467,
+        "upper": 0.1768160369337062
+      },
+      "interpretation": "Marginally significant",
+      "transformer_folds": [
+        1.0,
+        0.9950980392156863,
+        0.9509803921568628,
+        0.8627450980392157,
+        0.9313725490196079
+      ],
+      "baseline_folds": [
+        0.9475446428571429,
+        0.8493303571428572,
+        0.7650462962962963,
+        0.8009259259259259,
+        0.8599537037037037
+      ]
+    },
+    "MLP (Deep)": {
+      "transformer_mean": 0.9480392156862745,
+      "baseline_mean": 0.8981316137566138,
+      "mean_difference": 0.049907601929660775,
+      "t_statistic": 2.5652714611998393,
+      "p_value": 0.062289537639444066,
+      "significance": "n.s.",
+      "cohens_d": 1.1472242735966112,
+      "effect_size_interpretation": "Large",
+      "confidence_interval_95": {
+        "lower": -0.0041084034661020355,
+        "upper": 0.10392360732542358
+      },
+      "interpretation": "No significant difference",
+      "transformer_folds": [
+        1.0,
+        0.9950980392156863,
+        0.9509803921568628,
+        0.8627450980392157,
+        0.9313725490196079
+      ],
+      "baseline_folds": [
+        0.9419642857142857,
+        0.9040178571428572,
+        0.8599537037037037,
+        0.8541666666666666,
+        0.9305555555555556
+      ]
+    },
+    "ResNet (Tabular)": {
+      "transformer_mean": 0.9480392156862745,
+      "baseline_mean": 0.8800347222222221,
+      "mean_difference": 0.06800449346405235,
+      "t_statistic": 2.506586706495043,
+      "p_value": 0.06629845720440564,
+      "significance": "n.s.",
+      "cohens_d": 1.1209796534440457,
+      "effect_size_interpretation": "Large",
+      "confidence_interval_95": {
+        "lower": -0.007321344066514343,
+        "upper": 0.14333033099461906
+      },
+      "interpretation": "No significant difference",
+      "transformer_folds": [
+        1.0,
+        0.9950980392156863,
+        0.9509803921568628,
+        0.8627450980392157,
+        0.9313725490196079
+      ],
+      "baseline_folds": [
+        0.9464285714285714,
+        0.8738839285714286,
+        0.8136574074074074,
+        0.8715277777777777,
+        0.8946759259259258
+      ]
+    },
+    "TabNet": {
+      "transformer_mean": 0.9480392156862745,
+      "baseline_mean": 0.9090856481481483,
+      "mean_difference": 0.03895356753812636,
+      "t_statistic": 1.2720805811347455,
+      "p_value": 0.2722673704654363,
+      "significance": "n.s.",
+      "cohens_d": 0.5688917304549455,
+      "effect_size_interpretation": "Medium",
+      "confidence_interval_95": {
+        "lower": -0.04606655109676909,
+        "upper": 0.1239736861730218
+      },
+      "interpretation": "No significant difference",
+      "transformer_folds": [
+        1.0,
+        0.9950980392156863,
+        0.9509803921568628,
+        0.8627450980392157,
+        0.9313725490196079
+      ],
+      "baseline_folds": [
+        0.9430803571428572,
+        0.8928571428571429,
+        0.8506944444444444,
+        0.9108796296296297,
+        0.9479166666666667
+      ]
+    }
+  },
+  "summary_statistics": {
+    "n_comparisons": 8,
+    "n_significant_001": 0,
+    "n_significant_01": 0,
+    "n_significant_05": 2
+  }
+}

@@ -354,7 +354,10 @@ def evaluate_clinical_metrics(model, tokenizer, batch_size, split_name="val"):
     import torch.nn.functional as F
 
     device = next(model.parameters()).device
-    val_path = os.path.join(DATA_DIR, "val.bin")
+    if "_fold" in split_name:
+        val_path = os.path.join(DATA_DIR, f"{split_name}.bin")
+    else:
+        val_path = os.path.join(DATA_DIR, "val.bin")
     val_tokens = np.fromfile(val_path, dtype=np.int32).tolist()
 
     # 获取数字 '1' 的 Token ID，用于提取患病概率
