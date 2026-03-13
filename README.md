@@ -41,17 +41,18 @@ uv run train.py
 
 ```
 medical-automl/
-├── prepare.py                  # Data preprocessing and evaluation metrics
-├── prepare_kfold.py            # K-fold data preparation
-├── train.py                    # Single-fold training
-├── train_kfold.py              # K-fold cross validation training
-├── run_baseline_sota.py        # SOTA baseline comparison (TabNet, ResNet, etc.)
-├── visualize_baselines.py      # Baseline visualization and plotting
-├── program.md                  # Agent instructions for autonomous experimentation
-├── KFOLD_GUIDE.md              # Detailed K-fold documentation
-├── patients.csv                # Cardiovascular patient dataset (303 samples)
-├── data/                       # Generated binary data and tokenizer
-└── results_clinical.tsv        # Experiment tracking
+├── prepare.py                      # Data preprocessing and evaluation metrics
+├── prepare_kfold.py                # K-fold data preparation
+├── train.py                        # Single-fold training
+├── train_kfold.py                  # K-fold cross validation training
+├── run_baseline_sota.py            # SOTA baseline comparison (5-fold CV)
+├── visualize_baselines_5fold.py    # 5-fold CV baseline visualization
+├── program.md                      # Agent instructions for autonomous experimentation
+├── KFOLD_GUIDE.md                  # Detailed K-fold documentation
+├── BASELINE_GUIDE.md               # Baseline comparison guide
+├── patients.csv                    # Cardiovascular patient dataset (303 samples)
+├── data/                           # Generated binary data and tokenizer
+└── results_clinical.tsv            # Experiment tracking
 ```
 
 ## 🔄 K-Fold Cross Validation (Recommended for Papers)
@@ -123,27 +124,35 @@ Reports comprehensive clinical metrics:
 
 **Description**: This dual-axis visualization traces the autonomous Neural Architecture Search (NAS) trajectory of the LLM agent across multiple experimental iterations. The primary solid red line represents the target optimization metric (Validation AUC), while the dashed blue line tracks Validation Accuracy. Solid markers denote "accepted" architectural mutations that successfully advanced the model's performance, whereas hollow markers represent the agent's autonomous "rejections" of suboptimal configurations (such as overfitting caused by excessive network depth). The trajectory vividly illustrates a genuine scientific trial-and-error process: the agent autonomously recovered from performance drops, successfully pivoted to a wider architecture (ASPECT_RATIO=48), and fine-tuned regularization (DROPOUT=0.2) to converge on the peak clinical performance.
 
-## 🏆 SOTA Baseline Comparison
+## 🏆 SOTA Baseline Comparison (5-Fold CV)
 
-Compare your Transformer model against 8+ state-of-the-art baselines including deep learning models (TabNet, ResNet, MLP) and traditional ML (XGBoost, Random Forest, SVM, etc.):
+Compare your Transformer model against 8+ SOTA baselines using **identical 5-fold cross validation** for fair comparison:
 
 ```bash
-# Run comprehensive baseline comparison (~5 minutes)
+# Run 5-fold CV baseline comparison (~25-30 minutes)
 uv run python run_baseline_sota.py
 
 # Generate publication-ready visualizations
-uv run python visualize_baselines.py
+uv run python visualize_baselines_5fold.py
 ```
 
-**Models Compared**:
+**Models Compared** (all use same 5-fold splits with seed=42):
 - **Deep Learning**: TabNet (Google Research), ResNet for Tabular Data, Deep MLP
 - **Traditional ML**: XGBoost, Random Forest, Gradient Boosting, SVM (RBF), Logistic Regression
 
+**Fair Comparison Features**:
+- ✅ Same 5-fold splits as your Transformer (StratifiedKFold, seed=42)
+- ✅ Separate StandardScaler per fold (fit on train, transform val)
+- ✅ Same evaluation metrics: AUC, Sensitivity, Specificity, Accuracy
+- ✅ Statistical reporting: mean ± std across 5 folds
+- ✅ Direct comparison with your Transformer results
+
 **Output**:
-- Clinical metrics (AUC, Sensitivity, Specificity, Accuracy) for all models
-- Bar charts, radar plots, and heatmaps for paper figures
-- Statistical ranking and significance analysis
-- JSON results for further analysis
+- Clinical metrics (mean ± std) for all models
+- AUC comparison with error bars
+- Fold-by-fold consistency visualization
+- Statistical ranking and significance
+- JSON results for reproducibility
 
 ## 🧪 Running Autonomous Experiments
 
