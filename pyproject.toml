@@ -24,6 +24,7 @@ dependencies = [
     "numpy>=2.2.6",
     "pandas>=2.3.3",
     "pyarrow>=21.0.0",
+    "pytorch-tabnet>=4.1.0",
     "requests>=2.32.0",
     "rustbpe>=0.1.0",
     "scikit-learn>=1.7.2",
