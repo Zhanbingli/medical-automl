@@ -113,8 +113,9 @@ def train_single_fold(fold_idx, k_folds, tokenizer, vocab_size):
             loss = loss / grad_accum_steps
             loss.backward()
             x, y, epoch = next(train_loader)
-
-        progress = min(total_training_time / TIME_BUDGET, 1.0)
+        MAX_STEPS =130
+        progress = min(step / MAX_STEPS, 1.0)
+        #progress = min(total_training_time / TIME_BUDGET, 1.0)
         lrm = get_lr_multiplier(progress)
         muon_momentum = get_muon_momentum(step)
         muon_weight_decay = get_weight_decay(progress)
@@ -156,7 +157,8 @@ def train_single_fold(fold_idx, k_folds, tokenizer, vocab_size):
 
         step += 1
 
-        if step > 10 and total_training_time >= TIME_BUDGET:
+        #if step > 10 and total_training_time >= TIME_BUDGET:
+        if step > MAX_STEPS:
             break
 
     print()

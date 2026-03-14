@@ -24,7 +24,7 @@ def plot_attention_heatmap():
     # 3. 加载刚才保存的最佳模型 (假设 Fold 0 表现最好)
     config = build_model_config(DEPTH)
     model = GPT(config).to(device)
-    model.load_state_dict(torch.load("saved_models/model_fold0.pt", map_location=device))
+    model.load_state_dict(torch.load("saved_models/model_fold1.pt", map_location=device))
     model.eval()
 
     # 4. 手动前向传播，拦截最后一层的 Q 和 K
@@ -81,20 +81,59 @@ def plot_attention_heatmap():
     final_step_attention = avg_attn_weights[-1, 1:]
     tokens_to_plot = tokens[1:]
     # 6. 使用 Seaborn 绘制热力图
-    # 把 figsize 的宽度从 14 改成 24，高度改成 3
-    plt.figure(figsize=(24, 3))
-    sns.heatmap([final_step_attention],
-                xticklabels=tokens_to_plot,
-                yticklabels=["Attention\nWeight"],
-                cmap="Reds",
-                cbar_kws={"orientation": "horizontal", "pad": 0.4})
+    # ---- 替换 plot_attention.py 中最后的“6. 使用 Seaborn 绘制热力图”部分 ----
 
-    plt.title("Transformer Attention Weights on Clinical Features", fontsize=16)
-    # 把字体稍微调小一点，角度倾斜到 60 度，防止重叠
-    plt.xticks(rotation=60, ha='right', fontsize=10)
+    import pandas as pd
+
+    # 提取最后一个 Token 对前面的注意力
+    final_step_attention = avg_attn_weights[-1, 1:]
+    tokens_to_plot = tokens[1:]
+
+    # 1. 过滤掉无意义的标点符号和模板结构词
+    ignore_tokens = ['患者', '特征', '：', '，', '。', '最终', '诊断', '结果', '为']
+    filtered_tokens = []
+    filtered_weights = []
+
+    # 为了让图表更直观，如果模型关注了具体的数字（如 233），我们尝试带上一点上下文
+    for i, (t, w) in enumerate(zip(tokens_to_plot, final_step_attention)):
+        clean_token = t.strip()
+        if clean_token and clean_token not in ignore_tokens:
+            # 如果是纯数字，我们把它的前一个词（通常是特征名）拼起来，例如 "胆固醇: 233"
+            if clean_token.replace('.', '', 1).isdigit() and i > 0:
+                prev_token = tokens_to_plot[i-1].strip()
+                if prev_token not in ignore_tokens:
+                    clean_token = f"{prev_token}: {clean_token}"
+            filtered_tokens.append(clean_token)
+            filtered_weights.append(w)
+
+    df_attn = pd.DataFrame({
+        'Token/Value': filtered_tokens,
+        'Attention Weight': filtered_weights
+    })
+
+    # 2. 按照注意力权重降序排列，只取 Top 12 最重要的特征
+    df_top = df_attn.groupby('Token/Value', as_index=False).sum() # 合并可能重复的token
+    df_top = df_top.sort_values(by='Attention Weight', ascending=False).head(12)
+
+    # 3. 绘制临床风格的“特征重要性”柱状图 (Feature Importance)
+    plt.figure(figsize=(10, 6))
+    sns.barplot(
+        data=df_top,
+        x='Attention Weight',
+        y='Token/Value',
+        palette='Reds_r',      # 使用从深红到浅红的渐变色
+        edgecolor='black'      # 增加黑边让图表在论文中更清晰
+    )
+
+    plt.title('Attention-based Feature Importance (Positive Case)', fontsize=16, fontweight='bold')
+    plt.xlabel('Attention Weight (Probability)', fontsize=14)
+    plt.ylabel('Clinical Features / Values', fontsize=14)
+    plt.grid(axis='x', linestyle='--', alpha=0.7)
     plt.tight_layout()
-    plt.savefig("attention_heatmap.png", dpi=300)
-    print("热力图已成功保存为 attention_heatmap.png！")
+
+    plt.savefig('attention_feature_importance.png', dpi=300, bbox_inches='tight')
+    print("✓ 已生成直观的特征重要性柱状图：attention_feature_importance.png")
+    plt.show()
 
 if __name__ == "__main__":
     plot_attention_heatmap()

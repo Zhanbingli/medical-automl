@@ -48,7 +48,7 @@ import pandas as pd
 df = pd.read_csv(KAGGLE_CSV)
 
 SEX_MAP = {'M': 1, 'F': 0}
-CP_MAP  = {'ATA': 1, 'NAP': 2, 'ASY': 3, 'TA': 4}
+CP_MAP = {'TA': 1, 'ATA': 2, 'NAP': 3, 'ASY': 4}
 ECG_MAP = {'Normal': 0, 'ST': 1, 'LVH': 2}
 ANG_MAP = {'Y': 1, 'N': 0}
 SLP_MAP = {'Up': 1, 'Flat': 2, 'Down': 3}

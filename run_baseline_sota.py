@@ -49,7 +49,13 @@ torch.manual_seed(RANDOM_STATE)
 print("\n[1/3] Loading patient data...")
 
 df = pd.read_csv('patients.csv')
-df = df.replace('?', np.nan).dropna()
+#df = df.replace('?', np.nan).dropna()
+df = df.replace('?', np.nan)
+for col in df.columns:
+    if df[col].isnull().any():
+        mode_val = df[col].mode()[0]
+        df[col] = df[col].fillna(mode_val)
+        print(f"  [Info] Filled missing values in '{col}' with mode: {mode_val}")
 
 feature_cols = ['age', 'sex', 'cp', 'trestbps', 'chol', 'fbs',
                 'restecg', 'thalach', 'exang', 'oldpeak', 'slope', 'ca', 'thal']
@@ -388,13 +394,14 @@ print(f"   Specificity: {best_model[1]['specificity']['mean']:.4f} ± {best_mode
 print("\n" + "=" * 80)
 print("COMPARISON WITH YOUR TRANSFORMER MODEL")
 print("=" * 80)
-print("Transformer (from train_kfold.py): AUC = 0.948 ± 0.050")
+# 【核心修改】：替换为你最新测得的严谨结果 0.752 ± 0.059
+print("Transformer (from train_kfold.py): AUC = 0.752 ± 0.059")
 best_auc_mean = best_model[1]['auc']['mean']
 best_auc_std = best_model[1]['auc']['std']
 print(f"Best Baseline ({best_model[0]}):     AUC = {best_auc_mean:.3f} ± {best_auc_std:.3f}")
 
 # Statistical comparison
-diff = 0.948 - best_auc_mean
+diff = 0.752 - best_auc_mean
 if abs(diff) < 0.02:
     print(f"\n✅ Your Transformer is COMPARABLE to best baseline (diff: {diff:+.3f})")
 elif diff > 0:
@@ -409,7 +416,7 @@ results_dict = {
     'individual_results': all_results,
     'summary': summary,
     'transformer_comparison': {
-        'transformer_auc': '0.948 ± 0.050',
+        'transformer_auc': '0.752 ± 0.059',
         'best_baseline': best_model[0],
         'best_baseline_auc': f"{best_auc_mean:.4f} ± {best_auc_std:.4f}"
     }
