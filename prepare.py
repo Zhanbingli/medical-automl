@@ -402,6 +402,27 @@ def evaluate_clinical_metrics(model, tokenizer, batch_size, split_name="val"):
         else:
             current_doc.append(token_id)
 
+    if current_doc and len(current_doc) >= 2:
+            last_token = current_doc[-1]
+            context = current_doc[:-1]
+
+            if len(context) > MAX_SEQ_LEN:
+                context = context[-MAX_SEQ_LEN:]
+
+            input_tensor = torch.tensor([context], dtype=torch.long, device=device)
+            logits = model(input_tensor)
+
+            probs = F.softmax(logits[0, -1], dim=-1)
+            prob_1 = probs[token_id_1].item()
+
+            pred_token = logits[0, -1].argmax().item()
+
+            actual_label = 1 if last_token == token_id_1 else 0
+            pred_label = 1 if pred_token == token_id_1 else 0
+
+            y_true.append(actual_label)
+            y_pred.append(pred_label)
+            y_prob.append(prob_1)
     if len(y_true) == 0:
         return 0.0, 0.0, 0.0, 0.0
 
@@ -418,7 +439,7 @@ def evaluate_clinical_metrics(model, tokenizer, batch_size, split_name="val"):
     specificity = tn / (tn + fp) if (tn + fp) > 0 else 0.0
 
     print(f"诊断混淆矩阵: 真阳性(TP)={tp}, 假阴性(漏诊/FN)={fn}, 真阴性(TN)={tn}, 假阳性(误诊/FP)={fp}")
-    return accuracy, auc, sensitivity, specificity
+    return accuracy, auc, sensitivity, specificity,y_true, y_prob
 # ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------

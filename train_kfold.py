@@ -166,7 +166,7 @@ def train_single_fold(fold_idx, k_folds, tokenizer, vocab_size):
     # Evaluate on this fold's validation set
     model.eval()
     with autocast_ctx:
-        val_acc, val_auc, val_sens, val_spec = evaluate_clinical_metrics(model, tokenizer, DEVICE_BATCH_SIZE, split_name=f"val_fold{fold_idx}")
+        val_acc, val_auc, val_sens, val_spec,y_true, y_prob= evaluate_clinical_metrics(model, tokenizer, DEVICE_BATCH_SIZE, split_name=f"val_fold{fold_idx}")
 
     print(f"\nFold {fold_idx + 1} Results:")
     print(f"  val_acc:  {val_acc:.6f}")
@@ -191,6 +191,8 @@ def train_single_fold(fold_idx, k_folds, tokenizer, vocab_size):
         'val_auc': val_auc,
         'val_sens': val_sens,
         'val_spec': val_spec,
+        'y_true': y_true,
+        'y_prob': y_prob,
     }
 
 def main():

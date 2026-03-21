@@ -1,7 +1,0 @@
-commit	val_auc	val_acc	memory_gb	status	description
-8505f61	0.818627	0.689655	0.0	keep	baseline with depth=3, aspect_ratio=32
-e9d02b3	0.813725	0.655172	0.0	discard	increase depth to 6 and dropout to 0.3 - val_auc decreased
-35b4abc	0.926471	0.793103	0.0	keep	increase aspect ratio to 48 (wider model) - val_auc improved significantly
-0abd527	0.901961	0.758621	0.0	discard	further increase aspect ratio to 64 - val_auc decreased
-d6e0a14	0.941176	0.827586	0.0	keep	reduce dropout to 0.2 - val_auc improved further
-131632c	0.759804	0.620690	0.0	discard	increase depth to 4 - val_auc decreased significantly

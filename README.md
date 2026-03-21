@@ -1,6 +1,6 @@
-# Medical AutoML
+# Generalizability Boundaries of Tabular-to-Text Transformers in Clinical Prediction
 
-**Automated Medical Research with LLM-powered Architecture Search**
+> ⚠️ **Manuscript Status**: This repository contains the official code and experimental logs for the paper "Generalizability Boundaries of Tabular-to-Text Transformers in Clinical Prediction: A Mechanistic Analysis of Specificity Collapse under Distribution Shift". The manuscript is currently under review.
 
 This project enables autonomous AI-driven experimentation for cardiovascular disease diagnosis using transformer architectures. The system automatically explores optimal model configurations through iterative experimentation, guided by clinical metrics (AUC, Sensitivity, Specificity).
 
@@ -41,19 +41,30 @@ uv run train.py
 
 ```
 medical-automl/
-├── prepare.py                      # Data preprocessing and evaluation metrics
-├── prepare_kfold.py                # K-fold data preparation
+├── figures/                        # Paper figures (public)
+│   ├── fig1_architecture.pdf/png   # Model architecture
+│   ├── roc_curve_paper.pdf/png      # ROC curves
+│   ├── confusion_matrix.pdf/png     # Confusion matrix
+│   ├── rf_feature_importance.pdf/png # Feature importance
+│   ├── generalizability.pdf/png     # External validation
+│   └── dataset_distribution_shift.pdf/png
+├── figures/supplementary/           # Supplementary figures (non-public)
+├── results/                        # Experimental results (JSON/TSV)
+├── scripts/                        # Experiment scripts
+│   ├── plot_*.py                    # Visualization scripts
+│   ├── figure*.py                  # Figure generation
+│   └── experiment_*.py             # Ablation studies
+├── docs/                           # Documentation
+│   ├── KFOLD_GUIDE.md              # K-fold cross validation guide
+│   ├── BASELINE_GUIDE.md           # Baseline comparison guide
+│   └── STATISTICAL_TESTS_GUIDE.md  # Statistical tests guide
+├── data/                           # Preprocessed data
+├── saved_models/                   # Trained model checkpoints
+├── prepare.py                      # Data preprocessing
 ├── train.py                        # Single-fold training
-├── train_kfold.py                  # K-fold cross validation training
-├── run_baseline_sota.py            # SOTA baseline comparison (5-fold CV)
-├── visualize_baselines_5fold.py    # 5-fold CV baseline visualization
-├── statistical_tests.py            # Statistical significance testing
-├── program.md                      # Agent instructions for autonomous experimentation
-├── KFOLD_GUIDE.md                  # Detailed K-fold documentation
-├── BASELINE_GUIDE.md               # Baseline comparison guide
-├── patients.csv                    # Cardiovascular patient dataset (303 samples)
-├── data/                           # Generated binary data and tokenizer
-└── results_clinical.tsv            # Experiment tracking
+├── train_kfold.py                  # K-fold cross validation
+├── run_baseline_sota.py            # SOTA baseline comparison
+└── statistical_tests.py            # Statistical significance testing
 ```
 
 ## 🔄 K-Fold Cross Validation (Recommended for Papers)
@@ -81,14 +92,11 @@ uv run python train_kfold.py --k_folds 5
 ## 🔬 How It Works
 
 ### 1. Data Textualization
-Structured patient records are converted into natural language:
-```
-患者特征：年龄63，性别1，胸痛类型1，静息血压145，胆固醇233，...
-最终诊断结果为：0
-```
+Structured patient records are converted into a standardized natural language narrative:
+`Patient Features: Age 63, Sex 1, Chest Pain Type 1, Resting Blood Pressure 145, Cholesterol 233, ... Final Diagnosis: 0`
 
 ### 2. Tokenization
-Custom BPE tokenizer trained on medical Chinese text with 8,192 vocabulary size.
+Custom BPE tokenizer trained on the clinical narrative corpus with an 8,192 vocabulary size, ensuring efficient subword segmentation of clinical numeric values.
 
 ### 3. Autonomous Experimentation
 AI agents iterate on `train.py` to optimize:
@@ -102,29 +110,23 @@ Reports comprehensive clinical metrics:
 - **Sensitivity**: True Positive Rate (minimize false negatives)
 - **Specificity**: True Negative Rate (minimize false positives)
 
-## 📈 Current Best Results
+## 📈 Key Findings (As reported in manuscript)
 
-| Metric | Value | Description |
-|--------|-------|-------------|
-| AUC | 0.941 | ROC curve area |
-| Accuracy | 0.828 | Overall correctness |
-| Sensitivity | 0.824 | True positive rate |
-| Specificity | 1.000 | True negative rate |
+This repository emphasizes mechanistic interpretability and robustness testing rather than pure performance chasing on small cohorts.
 
-**Configuration**: ASPECT_RATIO=48, DROPOUT=0.2, DEPTH=3
+| Model / Paradigm            | Internal CV (AUC) | External Validation (AUC) | Specificity Drop      |
+| --------------------------- | ----------------- | ------------------------- | --------------------- |
+| Random Forest (Baseline)    | 0.952 ± 0.021     | 0.891 ± 0.042             | Maintained (95.2%)    |
+| Tabular-to-Text Transformer | 0.762 ± 0.070     | 0.624 ± 0.033             | **Collapsed (65.6%)** |
+
+**Conclusion**: While the agent-optimized Transformer successfully learns predictive representations, it exhibits a critical structural vulnerability (Specificity Collapse) when encountering out-of-distribution imputation artifacts (e.g., zero-padded missing features) in multi-center external validation, a failure mode avoided by traditional tree-based routing.
 
 ## 📊 Results Visualization
 
-### ROC Curve Analysis
-![ROC Comparison Curve](assets/images/roc_comparison_curve.png)
+### Specificity Collapse & Decision Boundary Oscillation
+![Dataset Distribution Shift](figures/dataset_distribution_shift.png)
 
-**Description**: The ROC (Receiver Operating Characteristic) curve compares the diagnostic performance of our Agent-Optimized LLM against traditional machine learning baselines on structured cardiovascular data. The AI-driven Transformer model (red line) achieves an excellent AUC of 0.902, successfully complementing its strong clinical metrics of Accuracy (0.828), Sensitivity (0.824), and Specificity (1.000). Notably, the agent-optimized model significantly outperforms the industry-standard XGBoost algorithm (AUC = 0.842) and approaches the theoretical small-sample ceiling established by the Random Forest baseline (AUC = 0.952). The steep early ascent of the red curve demonstrates the model's ability to maintain high sensitivity at extremely low false positive rates, a critical requirement for safe and effective clinical screening.
-
-### Automated Architecture Search Trajectory
-![Agent Search Trajectory](assets/images/agent_search_trajectory.png)
-
-**Description**: This dual-axis visualization traces the autonomous Neural Architecture Search (NAS) trajectory of the LLM agent across multiple experimental iterations. The primary solid red line represents the target optimization metric (Validation AUC), while the dashed blue line tracks Validation Accuracy. Solid markers denote "accepted" architectural mutations that successfully advanced the model's performance, whereas hollow markers represent the agent's autonomous "rejections" of suboptimal configurations (such as overfitting caused by excessive network depth). The trajectory vividly illustrates a genuine scientific trial-and-error process: the agent autonomously recovered from performance drops, successfully pivoted to a wider architecture (ASPECT_RATIO=48), and fine-tuned regularization (DROPOUT=0.2) to converge on the peak clinical performance.
-
+**Description**: The codebase includes scripts to reproduce the core mechanistic finding of the paper. When the Transformer encoder encounters uniform zero-padding for missing features in the external Kaggle cohort (acting as severe out-of-distribution tokens), its global attention mechanism is catastrophically disrupted. This repository provides the tools to visualize this phenomenon through KDE distribution plots, attention weight mapping, and confusion matrix reconstruction.
 ## 🏆 SOTA Baseline Comparison (5-Fold CV)
 
 Compare your Transformer model against 8+ SOTA baselines using **identical 5-fold cross validation** for fair comparison:
@@ -232,7 +234,8 @@ If you use this project in your research, please cite:
 ```bibtex
 @software{medical_automl,
   author = {Zhanbingli},
-  title = {Medical AutoML: Autonomous LLM-powered Medical Research},
+  title = {Generalizability Boundaries of Tabular-to-Text Transformers in Clinical Prediction: A Mechanistic Analysis of Specificity Collapse under Distribution Shift
+},
   url = {https://github.com/Zhanbingli/medical-automl},
   year = {2026}
 }
@@ -254,7 +257,7 @@ This project is inspired by autoresearch concepts but represents independent dev
 
 For questions or collaboration:
 - GitHub Issues: https://github.com/Zhanbingli/medical-automl/issues
-- Author: https://github.com/Zhanbingli
+- Author: Zhanbingli
 
 ---
 

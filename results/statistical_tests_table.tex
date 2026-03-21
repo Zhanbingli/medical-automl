@@ -1,0 +1,20 @@
+% LaTeX table for statistical tests
+\begin{table}[htbp]
+\centering
+\caption{Paired t-test Results: Transformer vs. Baseline Models}
+\label{tab:statistical_tests}
+\begin{tabular}{lcccc}
+\toprule
+Model & Mean Diff & p-value & Cohen's $d$ & 95\% CI \\
+\midrule
+Random Forest & -0.149 & 0.0170* & -1.761 & [-0.254, -0.044] \\
+XGBoost & -0.127 & 0.0231* & -1.602 & [-0.226, -0.029] \\
+Logistic Regression & -0.150 & 0.0200* & -1.675 & [-0.261, -0.039] \\
+SVM (RBF) & -0.136 & 0.0297* & -1.479 & [-0.250, -0.022] \\
+Gradient Boosting & -0.123 & 0.0335* & -1.423 & [-0.231, -0.016] \\
+MLP (Deep) & -0.145 & 0.0195* & -1.688 & [-0.251, -0.038] \\
+ResNet (Tabular) & -0.120 & 0.0411* & -1.329 & [-0.232, -0.008] \\
+TabNet & -0.133 & 0.0150* & -1.827 & [-0.224, -0.043] \\
+\bottomrule
+\end{tabular}
+\end{table}

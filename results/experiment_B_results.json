@@ -1,0 +1,67 @@
+{
+  "experiment": "B_language_comparison",
+  "english_encoding": {
+    "fold_results": [
+      {
+        "fold": 1,
+        "auc": 0.7435064935064936,
+        "acc": 0.6557377049180327,
+        "sensitivity": 0.5714285714285714,
+        "specificity": 0.7272727272727273
+      },
+      {
+        "fold": 2,
+        "auc": 0.8755411255411255,
+        "acc": 0.8032786885245902,
+        "sensitivity": 0.6785714285714286,
+        "specificity": 0.9090909090909091
+      },
+      {
+        "fold": 3,
+        "auc": 0.7857142857142857,
+        "acc": 0.7213114754098361,
+        "sensitivity": 0.75,
+        "specificity": 0.696969696969697
+      },
+      {
+        "fold": 4,
+        "auc": 0.8125701459034793,
+        "acc": 0.7333333333333333,
+        "sensitivity": 0.8148148148148148,
+        "specificity": 0.6666666666666666
+      },
+      {
+        "fold": 5,
+        "auc": 0.7488839285714285,
+        "acc": 0.7166666666666667,
+        "sensitivity": 0.5357142857142857,
+        "specificity": 0.875
+      }
+    ],
+    "summary": {
+      "auc": {
+        "mean": 0.7932431958473625,
+        "std": 0.05395518712585725
+      },
+      "acc": {
+        "mean": 0.7260655737704919,
+        "std": 0.05261091964219654
+      },
+      "sensitivity": {
+        "mean": 0.6701058201058201,
+        "std": 0.11746672250042452
+      },
+      "specificity": {
+        "mean": 0.7749999999999999,
+        "std": 0.1096392992554699
+      }
+    }
+  },
+  "chinese_encoding_reference": {
+    "auc": {
+      "mean": 0.762,
+      "std": 0.07
+    },
+    "source": "Original paper, same architecture and K-fold protocol"
+  }
+}

@@ -49,7 +49,7 @@ def load_transformer_results() -> Optional[List[float]]:
                 return [fold['val_auc'] for fold in data['individual_results']]
 
     # Try alternative locations
-    for filename in ['results_kfold_5.json', 'results_kfold.json']:
+    for filename in ['results_kfold_5.json']:
         filepath = Path(filename)
         if filepath.exists():
             with open(filepath, 'r') as f:

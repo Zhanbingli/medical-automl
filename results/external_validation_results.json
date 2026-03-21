@@ -1,0 +1,61 @@
+{
+  "external_cohort": "Kaggle Heart Failure Prediction (n=918)",
+  "training_cohort": "UCI Cardiovascular Disease (n=297)",
+  "n_fold_models": 5,
+  "fold_results": [
+    {
+      "fold": 0,
+      "auc": 0.6464470904551566,
+      "acc": 0.6198257080610022,
+      "sensitivity": 0.7224409448818898,
+      "specificity": 0.4926829268292683
+    },
+    {
+      "fold": 1,
+      "auc": 0.5710197810639523,
+      "acc": 0.4793028322440087,
+      "sensitivity": 0.1220472440944882,
+      "specificity": 0.9219512195121952
+    },
+    {
+      "fold": 2,
+      "auc": 0.6275542538889956,
+      "acc": 0.5315904139433552,
+      "sensitivity": 0.23622047244094488,
+      "specificity": 0.8975609756097561
+    },
+    {
+      "fold": 3,
+      "auc": 0.6683695025926637,
+      "acc": 0.6252723311546841,
+      "sensitivity": 0.5019685039370079,
+      "specificity": 0.7780487804878049
+    },
+    {
+      "fold": 4,
+      "auc": 0.6071922412137507,
+      "acc": 0.5969498910675382,
+      "sensitivity": 0.9271653543307087,
+      "specificity": 0.1878048780487805
+    }
+  ],
+  "summary": {
+    "auc": {
+      "mean": 0.6241165738429038,
+      "std": 0.03339009960318731
+    },
+    "acc": {
+      "mean": 0.5705882352941176,
+      "std": 0.0565039305531933
+    },
+    "sensitivity": {
+      "mean": 0.5019685039370079,
+      "std": 0.29811495726490395
+    },
+    "specificity": {
+      "mean": 0.6556097560975609,
+      "std": 0.27923324947884554
+    }
+  },
+  "feature_note": "ca and thal not available in Kaggle dataset, zero-padded to 0"
+}

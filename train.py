@@ -662,7 +662,7 @@ if __name__ == "__main__":
 
     model.eval()
     with autocast_ctx:
-        val_acc, val_auc, val_sens, val_spec = evaluate_clinical_metrics(model, tokenizer, DEVICE_BATCH_SIZE)
+        val_acc, val_auc, val_sens, val_spec,_,_= evaluate_clinical_metrics(model, tokenizer, DEVICE_BATCH_SIZE)
 
     t_end = time.time()
     startup_time = t_start_training - t_start

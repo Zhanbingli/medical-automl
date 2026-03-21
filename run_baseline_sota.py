@@ -428,3 +428,132 @@ with open('baseline_comparison_5fold.json', 'w') as f:
 print("\n" + "=" * 80)
 print("Results saved to: baseline_comparison_5fold.json")
 print("=" * 80)
+
+# =============================================================================
+# [新增] 6. 提取并绘制最佳树模型 (Random Forest) 的特征重要性
+# =============================================================================
+print("\n" + "=" * 80)
+print("Generating Random Forest Feature Importance Plot...")
+print("=" * 80)
+
+import matplotlib.pyplot as plt
+import seaborn as sns
+from sklearn.ensemble import RandomForestClassifier
+
+FEATURE_MAPPING = {
+    'age': 'Age', 'sex': 'Sex', 'cp': 'Chest Pain Type', 'trestbps': 'Resting BP',
+    'chol': 'Cholesterol', 'fbs': 'Fasting BS', 'restecg': 'Resting ECG',
+    'thalach': 'Max HR', 'exang': 'Exercise Angina', 'oldpeak': 'Oldpeak',
+    'slope': 'ST Slope', 'ca': 'Major Vessels', 'thal': 'Thalassemia'
+}
+
+# 重新在全体数据上训练一次 RF 以获取最全局的特征重要性
+# 参数与你 5-fold CV 中保持完全一致
+rf_final = RandomForestClassifier(n_estimators=200, max_depth=10, random_state=42, n_jobs=-1)
+rf_final.fit(X, y)
+
+# 获取特征重要性 (Gini Importance / Mean Decrease Impurity)
+importances = rf_final.feature_importances_
+feature_names = [FEATURE_MAPPING.get(col, col) for col in X.columns]
+
+df_importance = pd.DataFrame({
+    'Clinical Features': feature_names,
+    'Importance (Mean Decrease Impurity)': importances
+})
+df_importance = df_importance.sort_values(by='Importance (Mean Decrease Impurity)', ascending=False)
+
+plt.rcParams['font.family'] = 'Times New Roman'
+plt.rcParams['axes.unicode_minus'] = False
+
+plt.figure(figsize=(10, 6), dpi=300)
+sns.barplot(
+    data=df_importance,
+    x='Importance (Mean Decrease Impurity)',
+    y='Clinical Features',
+    palette='Blues_r',
+    edgecolor='black'
+)
+
+plt.title('Random Forest Feature Importance (Global)', fontsize=16, fontweight='bold')
+plt.xlabel('Feature Importance (Mean Decrease Impurity)', fontsize=14, fontweight='bold')
+plt.ylabel('Clinical Features', fontsize=14, fontweight='bold')
+plt.grid(axis='x', linestyle=':', alpha=0.7, color='gray')
+plt.tight_layout()
+
+plt.savefig('rf_feature_importance.png', dpi=300, bbox_inches='tight')
+plt.savefig('rf_feature_importance.pdf', format='pdf', bbox_inches='tight')
+print("✓ 已生成 Random Forest 特征重要性图表 (rf_feature_importance.pdf)")
+
+# =============================================================================
+# [新增] 7. 树模型 (Random Forest) 的外部 Kaggle 验证
+# =============================================================================
+print("\n" + "=" * 80)
+print("External Validation: Random Forest on Kaggle Heart Failure Dataset")
+print("=" * 80)
+
+# 1. 加载和预处理 Kaggle 数据 (逻辑与你写的 external_validation.py 保持绝对一致)
+KAGGLE_CSV = '/Users/lizhanbing12/.cache/kagglehub/datasets/fedesoriano/heart-failure-prediction/versions/1/heart.csv'
+try:
+    df_kaggle = pd.read_csv(KAGGLE_CSV)
+
+    SEX_MAP = {'M': 1, 'F': 0}
+    CP_MAP = {'TA': 1, 'ATA': 2, 'NAP': 3, 'ASY': 4}
+    ECG_MAP = {'Normal': 0, 'ST': 1, 'LVH': 2}
+    ANG_MAP = {'Y': 1, 'N': 0}
+    SLP_MAP = {'Up': 1, 'Flat': 2, 'Down': 3}
+
+    # 特征对齐
+    df_kaggle_aligned = pd.DataFrame()
+    df_kaggle_aligned['age'] = df_kaggle['Age']
+    df_kaggle_aligned['sex'] = df_kaggle['Sex'].map(SEX_MAP)
+    df_kaggle_aligned['cp'] = df_kaggle['ChestPainType'].map(CP_MAP)
+    df_kaggle_aligned['trestbps'] = df_kaggle['RestingBP']
+    df_kaggle_aligned['chol'] = df_kaggle['Cholesterol']
+    df_kaggle_aligned['fbs'] = df_kaggle['FastingBS']
+    df_kaggle_aligned['restecg'] = df_kaggle['RestingECG'].map(ECG_MAP)
+    df_kaggle_aligned['thalach'] = df_kaggle['MaxHR']
+    df_kaggle_aligned['exang'] = df_kaggle['ExerciseAngina'].map(ANG_MAP)
+    df_kaggle_aligned['oldpeak'] = df_kaggle['Oldpeak']
+    df_kaggle_aligned['slope'] = df_kaggle['ST_Slope'].map(SLP_MAP)
+    df_kaggle_aligned['ca'] = 0   # 缺失特征全局补零
+    df_kaggle_aligned['thal'] = 0 # 缺失特征全局补零
+
+    y_kaggle = df_kaggle['HeartDisease'].values
+    X_kaggle = df_kaggle_aligned[feature_cols].astype(float)
+
+    # 2. 使用与之前完全相同的 5-Fold 划分，重训 RF 并预测 Kaggle，确保对比绝对公平
+    rf_external_results = []
+
+    for fold_idx, (train_idx, val_idx) in enumerate(skf.split(X, y)):
+        X_train_fold = X.iloc[train_idx]
+        y_train_fold = y.iloc[train_idx]
+
+        # 训练当前 Fold 的 RF
+        rf = RandomForestClassifier(n_estimators=200, max_depth=10, random_state=RANDOM_STATE, n_jobs=-1)
+        rf.fit(X_train_fold, y_train_fold)
+
+        # 在 Kaggle 上直接推理 (注意：树模型不需要 StandardScaler)
+        rf_preds = rf.predict(X_kaggle)
+        rf_probs = rf.predict_proba(X_kaggle)[:, 1]
+
+        metrics = calculate_clinical_metrics(y_kaggle, rf_preds, rf_probs)
+        rf_external_results.append(metrics)
+
+    # 3. 汇总并打印结果
+    print("\nRandom Forest External Validation (Kaggle n=918) across 5 folds:")
+    rf_ext_summary = {}
+    for metric in ['accuracy', 'auc', 'sensitivity', 'specificity']:
+        vals = [r[metric] for r in rf_external_results]
+        rf_ext_summary[metric] = {'mean': np.mean(vals), 'std': np.std(vals)}
+
+    print(f"  AUC:         {rf_ext_summary['auc']['mean']:.4f} ± {rf_ext_summary['auc']['std']:.4f}")
+    print(f"  Accuracy:    {rf_ext_summary['accuracy']['mean']:.4f} ± {rf_ext_summary['accuracy']['std']:.4f}")
+    print(f"  Sensitivity: {rf_ext_summary['sensitivity']['mean']:.4f} ± {rf_ext_summary['sensitivity']['std']:.4f}")
+    print(f"  Specificity: {rf_ext_summary['specificity']['mean']:.4f} ± {rf_ext_summary['specificity']['std']:.4f}")
+
+    print("\n>>> 理论预期:")
+    print("相比 Transformer 的特异性暴跌 (81.1% -> 65.6%)，如果随机森林的特异性保持在较高水平，")
+    print("即可用实证数据证明你的核心论点：树模型凭借分支路由，能原生抵抗补零伪影，而全局注意力机制则会被严重干扰。")
+
+except Exception as e:
+    print(f"Error loading Kaggle dataset: {e}")
