@@ -1,6 +1,6 @@
 # Specificity Collapse versus Calibration Drift: Contrasting Generalization Failure Modes of Tabular-to-Text Transformers and LLMs in Clinical Cardiovascular Prediction
 
-> **Manuscript Status**: This repository contains the official code, data, and experimental results for the paper *"Specificity Collapse versus Calibration Drift: Contrasting Generalization Failure Modes of Tabular-to-Text Transformers and Large Language Models in Clinical Cardiovascular Prediction"*. The manuscript is currently under peer review.
+> **Manuscript Status**: This repository contains the official code, data, and experimental results for the paper *"Specificity Collapse versus Calibration Drift: Contrasting Generalization Failure Modes of Tabular-to-Text Transformers and Large Language Models in Clinical Cardiovascular Prediction"*. The manuscript has been submitted for publication.
 
 ## Overview
 
@@ -168,7 +168,7 @@ The critical distributional difference: `thal=0` has no valid clinical interpret
   author  = {Li, Zhanbing},
   title   = {Specificity Collapse versus Calibration Drift: Contrasting Generalization Failure Modes of Tabular-to-Text Transformers and Large Language Models in Clinical Cardiovascular Prediction},
   year    = {2026},
-  note    = {Under review},
+  note    = {Submitted},
   url     = {https://github.com/Zhanbingli/medical-automl}
 }
 ```
