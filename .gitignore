@@ -18,9 +18,15 @@ AGENTS.md
 # Experimental code/artifacts
 dev/
 
+# macOS
+.DS_Store
+
 # Medical AutoML specific
 data/*.bin
 data/*.pkl
+data_english/*.bin
+data_english/*.pkl
+data_english/*.flag
 !data/.gitkeep
 run.log
 *.log
@@ -28,5 +34,12 @@ run.log
 
 # Model checkpoints
 checkpoints/
+saved_models/
 *.pth
 *.ckpt
+*.pt
+
+# Manuscript & cover letter (under review)
+manuscript_draft.pdf
+docs/manuscript_draft.*
+docs/cover_letter*

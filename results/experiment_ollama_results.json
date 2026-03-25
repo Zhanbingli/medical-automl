@@ -1,0 +1,169 @@
+{
+  "model": "qwen3.5:2b",
+  "experiment": "zero-shot vs 5-shot",
+  "random_state": 42,
+  "quick_mode": 0,
+  "uci_zero_shot": {
+    "fold_results": [
+      {
+        "fold": 0,
+        "auc": 0.568181818181818,
+        "acc": 0.5573770491803278,
+        "sensitivity": 0.8928571428571429,
+        "specificity": 0.2727272727272727,
+        "n_records": 61,
+        "n_failed": 0,
+        "elapsed_s": 59.9
+      },
+      {
+        "fold": 1,
+        "auc": 0.6282467532467533,
+        "acc": 0.6065573770491803,
+        "sensitivity": 0.9642857142857143,
+        "specificity": 0.30303030303030304,
+        "n_records": 61,
+        "n_failed": 0,
+        "elapsed_s": 58.2
+      },
+      {
+        "fold": 2,
+        "auc": 0.711038961038961,
+        "acc": 0.639344262295082,
+        "sensitivity": 0.9285714285714286,
+        "specificity": 0.3939393939393939,
+        "n_records": 61,
+        "n_failed": 0,
+        "elapsed_s": 58.1
+      },
+      {
+        "fold": 3,
+        "auc": 0.7255892255892255,
+        "acc": 0.6,
+        "sensitivity": 0.9629629629629629,
+        "specificity": 0.30303030303030304,
+        "n_records": 60,
+        "n_failed": 0,
+        "elapsed_s": 56.6
+      },
+      {
+        "fold": 4,
+        "auc": 0.6456473214285714,
+        "acc": 0.5833333333333334,
+        "sensitivity": 0.9285714285714286,
+        "specificity": 0.28125,
+        "n_records": 60,
+        "n_failed": 0,
+        "elapsed_s": 57.9
+      }
+    ],
+    "summary": {
+      "auc": {
+        "mean": 0.6557408158970658,
+        "std": 0.05737780997068727
+      },
+      "acc": {
+        "mean": 0.5973224043715847,
+        "std": 0.027017091967555484
+      },
+      "sensitivity": {
+        "mean": 0.9354497354497354,
+        "std": 0.026447088756256454
+      },
+      "specificity": {
+        "mean": 0.31079545454545454,
+        "std": 0.043256514342441536
+      }
+    }
+  },
+  "uci_few_shot": {
+    "fold_results": [
+      {
+        "fold": 0,
+        "auc": 0.7619047619047619,
+        "acc": 0.7540983606557377,
+        "sensitivity": 0.6428571428571429,
+        "specificity": 0.8484848484848485,
+        "n_records": 61,
+        "n_failed": 0,
+        "elapsed_s": 72.5
+      },
+      {
+        "fold": 1,
+        "auc": 0.7283549783549783,
+        "acc": 0.5737704918032787,
+        "sensitivity": 0.9642857142857143,
+        "specificity": 0.24242424242424243,
+        "n_records": 61,
+        "n_failed": 0,
+        "elapsed_s": 71.6
+      },
+      {
+        "fold": 2,
+        "auc": 0.7532467532467533,
+        "acc": 0.6721311475409836,
+        "sensitivity": 0.9285714285714286,
+        "specificity": 0.45454545454545453,
+        "n_records": 61,
+        "n_failed": 0,
+        "elapsed_s": 73.7
+      },
+      {
+        "fold": 3,
+        "auc": 0.8075196408529741,
+        "acc": 0.75,
+        "sensitivity": 0.7777777777777778,
+        "specificity": 0.7272727272727273,
+        "n_records": 60,
+        "n_failed": 0,
+        "elapsed_s": 70.8
+      },
+      {
+        "fold": 4,
+        "auc": 0.7243303571428572,
+        "acc": 0.6833333333333333,
+        "sensitivity": 0.7142857142857143,
+        "specificity": 0.65625,
+        "n_records": 60,
+        "n_failed": 0,
+        "elapsed_s": 73.9
+      }
+    ],
+    "summary": {
+      "auc": {
+        "mean": 0.755071298300465,
+        "std": 0.029865100169511324
+      },
+      "acc": {
+        "mean": 0.6866666666666668,
+        "std": 0.06561414968053113
+      },
+      "sensitivity": {
+        "mean": 0.8055555555555556,
+        "std": 0.12320773568460336
+      },
+      "specificity": {
+        "mean": 0.5857954545454545,
+        "std": 0.214063416386542
+      }
+    }
+  },
+  "kaggle_zero_shot": {
+    "auc": 0.5973785289033993,
+    "acc": 0.5980392156862745,
+    "sensitivity": 0.8838582677165354,
+    "specificity": 0.24390243902439024,
+    "n_records": 918,
+    "n_failed": 0,
+    "elapsed_s": 1008.7
+  },
+  "kaggle_few_shot": {
+    "auc": 0.7387747263299405,
+    "acc": 0.6873638344226579,
+    "sensitivity": 0.7362204724409449,
+    "specificity": 0.6268292682926829,
+    "n_records": 918,
+    "n_failed": 0,
+    "elapsed_s": 1239.1
+  },
+  "note": "Kaggle ca/thal zero-padded (0) to match Transformer pipeline. LLM sees ca=0 → 'Fluoroscopy vessels: 0' and thal=0 → 'Thalassemia: not available'."
+}
