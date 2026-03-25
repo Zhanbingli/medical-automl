@@ -1,263 +1,188 @@
-# Generalizability Boundaries of Tabular-to-Text Transformers in Clinical Prediction
+# Specificity Collapse versus Calibration Drift: Contrasting Generalization Failure Modes of Tabular-to-Text Transformers and LLMs in Clinical Cardiovascular Prediction
 
-> ⚠️ **Manuscript Status**: This repository contains the official code and experimental logs for the paper "Generalizability Boundaries of Tabular-to-Text Transformers in Clinical Prediction: A Mechanistic Analysis of Specificity Collapse under Distribution Shift". The manuscript is currently under review.
+> **Manuscript Status**: This repository contains the official code, data, and experimental results for the paper *"Specificity Collapse versus Calibration Drift: Contrasting Generalization Failure Modes of Tabular-to-Text Transformers and Large Language Models in Clinical Cardiovascular Prediction"*. The manuscript is currently under peer review.
 
-This project enables autonomous AI-driven experimentation for cardiovascular disease diagnosis using transformer architectures. The system automatically explores optimal model configurations through iterative experimentation, guided by clinical metrics (AUC, Sensitivity, Specificity).
+## Overview
 
-## 🎯 Key Features
+This study characterizes and contrasts the generalization failure modes of:
+1. A custom **GPT-style tabular-to-text Transformer** trained from scratch on structured clinical data
+2. A locally deployed **Large Language Model (Qwen3.5-2B)** using 0/1/3/5/10-shot in-context learning
+3. **Eight traditional ML baselines** (Random Forest, XGBoost, Logistic Regression, SVM, Gradient Boosting, MLP, ResNet, TabNet)
 
-- **Autonomous Architecture Search**: AI agents automatically modify model architecture and hyperparameters
-- **Clinical-Focused Evaluation**: Optimized for real-world medical metrics (AUC, Sensitivity, Specificity) rather than just accuracy
-- **K-Fold Cross Validation**: Reduces evaluation variance from ~0.10 to ~0.02, providing publication-ready statistics (mean ± std)
-- **Structured-to-Text Pipeline**: Novel approach converting structured patient data into natural language for transformer processing
-- **Rapid Prototyping**: 5-minute training cycles enable 100+ experiments overnight
-- **Cross-Platform**: Supports Apple Silicon (MPS), NVIDIA GPUs, and CPU environments
+All models are trained on the UCI Heart Disease dataset (n=303) and externally validated on an independent Kaggle cohort (n=918) with systematic imputation differences.
 
-## 🚀 Quick Start
+## Key Findings
+
+| Model / Paradigm | Internal CV (AUC) | External Validation (AUC) | Specificity Change |
+|---|---|---|---|
+| Random Forest (Baseline) | 0.911 ± 0.024 | 0.891 ± 0.042 | Maintained (89.1%) |
+| Logistic Regression | 0.912 ± 0.018 | — | Maintained |
+| Tabular-to-Text Transformer | 0.762 ± 0.070 | 0.624 ± 0.033 | **Collapsed** (81.1% → 65.6%) |
+| LLM 0-shot (Qwen3.5-2B) | 0.656 ± 0.058 | — | Positive bias (31.1%) |
+| LLM 5-shot (Qwen3.5-2B) | 0.764 ± 0.030 | 0.627 (Δ=+0.041) | **Most stable generalization** |
+
+**Conclusion**: The custom Transformer exhibits *Specificity Collapse* due to OOD token-induced attention disruption, while the LLM exhibits *calibration drift* correctable through 5-shot in-context learning. The 5-shot LLM achieves deployment-stable specificity without retraining.
+
+## Repository Structure
+
+```
+├── figures/                           # Publication figures
+│   ├── figure1_architecture.*         # Model architecture & pipeline
+│   ├── attention_ood_comparison.*     # Attention weight analysis (ID vs OOD)
+│   ├── llm_full_metrics.*            # LLM performance across shot regimes
+│   ├── llm_generalization_gap.*      # LLM generalization gap analysis
+│   ├── llm_shotcurve.*              # Shot-curve learning dynamics
+│   ├── sens_spec_tradeoff.*         # Sensitivity-specificity tradeoff
+│   ├── dataset_distribution_shift.*  # KDE distribution shift visualization
+│   ├── roc_curve_paper_perfect_match.* # ROC curves
+│   ├── confusion_matrix_comparison.* # Confusion matrices
+│   ├── rf_feature_importance.*       # Random Forest feature importance
+│   ├── generalizability_comparison_kaggle.* # External validation comparison
+│   └── supplementary/               # Supplementary figures (S1-S9)
+├── scripts/                          # Experiment & visualization scripts
+│   ├── experiment_ollama.py          # LLM (Qwen3.5-2B) evaluation pipeline
+│   ├── experiment_shotcurve.py       # N-shot learning curve experiment
+│   ├── experiment_A.py              # Ablation study A (imputation)
+│   ├── experiment_B.py              # Ablation study B
+│   ├── external_validation.py       # External Kaggle validation
+│   ├── statistical_tests_llm.py     # Statistical tests for LLM results
+│   ├── plot_figure1_architecture.py # Architecture diagram generation
+│   ├── plot_attention_ood_comparison.py # Attention analysis visualization
+│   ├── plot_llm_comparison.py       # LLM comparison figures
+│   ├── plot_sens_spec_tradeoff.py   # Sensitivity-specificity plots
+│   ├── plot_*.py                    # Other visualization scripts
+│   └── sci_stats_processor.py       # Statistical processing utilities
+├── results/                          # Experimental results (JSON/CSV/TeX)
+│   ├── baseline_comparison_5fold.json    # 8-model baseline results
+│   ├── experiment_ollama_results.json    # LLM zero-shot & 5-shot results
+│   ├── experiment_shotcurve_results.json # 0/1/3/5/10-shot results
+│   ├── experiment_A_results.json         # Ablation A results
+│   ├── experiment_B_results.json         # Ablation B results
+│   ├── external_validation_results.json  # Kaggle external validation
+│   ├── results_kfold_5.json             # Transformer 5-fold CV results
+│   ├── statistical_tests_results.json   # Baseline statistical tests
+│   ├── statistical_tests_llm.json       # LLM statistical tests
+│   ├── statistical_tests_llm.tex        # LaTeX table for LLM statistics
+│   └── statistical_tests_table.tex      # LaTeX table for baseline stats
+├── docs/                             # Documentation
+│   ├── KFOLD_GUIDE.md               # K-fold cross validation guide
+│   ├── BASELINE_GUIDE.md            # Baseline comparison guide
+│   └── STATISTICAL_TESTS_GUIDE.md   # Statistical tests guide
+├── prepare.py                        # Data preprocessing & textualization
+├── train.py                          # Single-fold Transformer training
+├── train_kfold.py                    # 5-fold Transformer training
+├── run_baseline_sota.py              # 8-model baseline comparison
+├── statistical_tests.py              # Baseline statistical significance
+├── evaluate_calibration.py           # Calibration analysis
+├── download_data.py                  # Dataset download utility
+├── patients.csv                      # UCI Heart Disease dataset (303 records)
+├── analysis.ipynb                    # Exploratory data analysis notebook
+├── pyproject.toml                    # Project dependencies
+└── LICENSE                           # MIT License
+```
+
+## Quick Start
 
 ### Prerequisites
 - Python 3.10+
-- Apple Silicon Mac or NVIDIA GPU
+- Apple Silicon Mac (MPS), NVIDIA GPU, or CPU
 - [uv](https://docs.astral.sh/uv/) package manager
+- [Ollama](https://ollama.com/) (for LLM experiments only)
 
 ### Installation
 
 ```bash
-# Clone the repository
 git clone https://github.com/Zhanbingli/medical-automl.git
 cd medical-automl
 
 # Install dependencies
 uv sync
-
-# Prepare data and train tokenizer (~2 min)
-uv run prepare.py
-
-# Run a single training experiment (~5 min)
-uv run train.py
 ```
 
-## 📊 Project Structure
-
-```
-medical-automl/
-├── figures/                        # Paper figures (public)
-│   ├── fig1_architecture.pdf/png   # Model architecture
-│   ├── roc_curve_paper.pdf/png      # ROC curves
-│   ├── confusion_matrix.pdf/png     # Confusion matrix
-│   ├── rf_feature_importance.pdf/png # Feature importance
-│   ├── generalizability.pdf/png     # External validation
-│   └── dataset_distribution_shift.pdf/png
-├── figures/supplementary/           # Supplementary figures (non-public)
-├── results/                        # Experimental results (JSON/TSV)
-├── scripts/                        # Experiment scripts
-│   ├── plot_*.py                    # Visualization scripts
-│   ├── figure*.py                  # Figure generation
-│   └── experiment_*.py             # Ablation studies
-├── docs/                           # Documentation
-│   ├── KFOLD_GUIDE.md              # K-fold cross validation guide
-│   ├── BASELINE_GUIDE.md           # Baseline comparison guide
-│   └── STATISTICAL_TESTS_GUIDE.md  # Statistical tests guide
-├── data/                           # Preprocessed data
-├── saved_models/                   # Trained model checkpoints
-├── prepare.py                      # Data preprocessing
-├── train.py                        # Single-fold training
-├── train_kfold.py                  # K-fold cross validation
-├── run_baseline_sota.py            # SOTA baseline comparison
-└── statistical_tests.py            # Statistical significance testing
-```
-
-## 🔄 K-Fold Cross Validation (Recommended for Papers)
-
-For **stable, publication-ready results**, use K-fold cross validation instead of single validation split:
+### Reproduce Experiments
 
 ```bash
-# 1. Prepare K-fold data (one-time, ~1 min)
-uv run python prepare_kfold.py --k_folds 5
+# 1. Prepare data and train tokenizer (~2 min)
+uv run python prepare.py
 
-# 2. Run K-fold training (~25 min total = 5 folds × 5 min)
+# 2. Train Transformer with 5-fold CV (~25 min)
 uv run python train_kfold.py --k_folds 5
 
-# 3. View stable results with mean ± std
-# Example output:
-# AUC: 0.910000 ± 0.020976  (much more stable than single split!)
-```
-
-**Why K-fold?**
-- Reduces variance from ~0.10 to ~0.02
-- Tests model on all data points
-- Provides confidence intervals for papers
-- See [KFOLD_GUIDE.md](KFOLD_GUIDE.md) for detailed documentation
-
-## 🔬 How It Works
-
-### 1. Data Textualization
-Structured patient records are converted into a standardized natural language narrative:
-`Patient Features: Age 63, Sex 1, Chest Pain Type 1, Resting Blood Pressure 145, Cholesterol 233, ... Final Diagnosis: 0`
-
-### 2. Tokenization
-Custom BPE tokenizer trained on the clinical narrative corpus with an 8,192 vocabulary size, ensuring efficient subword segmentation of clinical numeric values.
-
-### 3. Autonomous Experimentation
-AI agents iterate on `train.py` to optimize:
-- Model architecture (depth, width, attention patterns)
-- Hyperparameters (learning rates, dropout, batch size)
-- Optimization strategies (Muon + AdamW)
-
-### 4. Clinical Evaluation
-Reports comprehensive clinical metrics:
-- **AUC**: Area Under ROC Curve (primary metric)
-- **Sensitivity**: True Positive Rate (minimize false negatives)
-- **Specificity**: True Negative Rate (minimize false positives)
-
-## 📈 Key Findings (As reported in manuscript)
-
-This repository emphasizes mechanistic interpretability and robustness testing rather than pure performance chasing on small cohorts.
-
-| Model / Paradigm            | Internal CV (AUC) | External Validation (AUC) | Specificity Drop      |
-| --------------------------- | ----------------- | ------------------------- | --------------------- |
-| Random Forest (Baseline)    | 0.952 ± 0.021     | 0.891 ± 0.042             | Maintained (95.2%)    |
-| Tabular-to-Text Transformer | 0.762 ± 0.070     | 0.624 ± 0.033             | **Collapsed (65.6%)** |
-
-**Conclusion**: While the agent-optimized Transformer successfully learns predictive representations, it exhibits a critical structural vulnerability (Specificity Collapse) when encountering out-of-distribution imputation artifacts (e.g., zero-padded missing features) in multi-center external validation, a failure mode avoided by traditional tree-based routing.
-
-## 📊 Results Visualization
-
-### Specificity Collapse & Decision Boundary Oscillation
-![Dataset Distribution Shift](figures/dataset_distribution_shift.png)
-
-**Description**: The codebase includes scripts to reproduce the core mechanistic finding of the paper. When the Transformer encoder encounters uniform zero-padding for missing features in the external Kaggle cohort (acting as severe out-of-distribution tokens), its global attention mechanism is catastrophically disrupted. This repository provides the tools to visualize this phenomenon through KDE distribution plots, attention weight mapping, and confusion matrix reconstruction.
-## 🏆 SOTA Baseline Comparison (5-Fold CV)
-
-Compare your Transformer model against 8+ SOTA baselines using **identical 5-fold cross validation** for fair comparison:
-
-```bash
-# Run 5-fold CV baseline comparison (~25-30 minutes)
+# 3. Run baseline comparison (~25-30 min)
 uv run python run_baseline_sota.py
 
-# Generate publication-ready visualizations
-uv run python visualize_baselines_5fold.py
+# 4. External validation on Kaggle cohort
+uv run python scripts/external_validation.py
+
+# 5. LLM evaluation (requires Ollama with qwen3.5:2b)
+uv run python scripts/experiment_ollama.py
+
+# 6. Shot-curve learning dynamics
+uv run python scripts/experiment_shotcurve.py
+
+# 7. Statistical significance testing
+uv run python statistical_tests.py
+uv run python scripts/statistical_tests_llm.py
 ```
 
-**Models Compared** (all use same 5-fold splits with seed=42):
-- **Deep Learning**: TabNet (Google Research), ResNet for Tabular Data, Deep MLP
-- **Traditional ML**: XGBoost, Random Forest, Gradient Boosting, SVM (RBF), Logistic Regression
-
-**Fair Comparison Features**:
-- ✅ Same 5-fold splits as your Transformer (StratifiedKFold, seed=42)
-- ✅ Separate StandardScaler per fold (fit on train, transform val)
-- ✅ Same evaluation metrics: AUC, Sensitivity, Specificity, Accuracy
-- ✅ Statistical reporting: mean ± std across 5 folds
-- ✅ Direct comparison with your Transformer results
-
-**Output**:
-- Clinical metrics (mean ± std) for all models
-- AUC comparison with error bars
-- Fold-by-fold consistency visualization
-- Statistical ranking and significance
-- JSON results for reproducibility
-
-### Statistical Significance Testing
-
-After running baseline comparison, perform statistical tests to validate significance:
+### Generate Figures
 
 ```bash
-# Run Wilcoxon signed-rank tests (paired 5-fold results)
-uv run python statistical_tests.py
+# All figure scripts output to figures/
+uv run python scripts/plot_figure1_architecture.py
+uv run python scripts/plot_attention_ood_comparison.py
+uv run python scripts/plot_llm_comparison.py
+uv run python scripts/plot_sens_spec_tradeoff.py
+uv run python scripts/plot_dataset_shift.py
+uv run python scripts/plot_roc.py
+uv run python scripts/plot_confusion_matrix.py
+uv run python scripts/plot_generaliza.py
 ```
 
-**Features**:
-- Wilcoxon signed-rank test for paired 5-fold AUC results
-- Effect size calculation (rank-biserial correlation *r*)
-- Bootstrap 95% confidence intervals (10,000 samples)
-- Automatic comparison with all baselines
-- LaTeX table generation for papers
+## Methods Summary
 
-**Output**:
-- Console table with p-values and effect sizes
-- `statistical_tests_results.json` - detailed results
-- `statistical_tests_table.tex` - LaTeX table for papers
+### Tabular-to-Text Pipeline
+Structured patient records → English clinical narrative → BPE tokenization (vocab=8,192) → GPT-style Transformer with rotary positional embeddings.
 
-**Interpretation**:
-- p < 0.05: Statistically significant difference
-- Effect size |r|: <0.1 negligible, <0.3 small, <0.5 medium, ≥0.5 large
-- 95% CI: Bootstrap confidence interval for mean AUC difference
+### LLM In-Context Learning
+Patient records → English narrative → Qwen3.5-2B via Ollama → JSON probability output → threshold at 0.5. N-shot examples sampled with balanced positive/negative cases (seed=42).
 
-## 🧪 Running Autonomous Experiments
+### Evaluation Protocol
+- **Internal**: 5-fold stratified CV (StratifiedKFold, seed=42) — all models use identical splits
+- **External**: Independent Kaggle cohort (n=918) with systematic zero-padding imputation
+- **Statistics**: Paired t-tests with Bonferroni correction, Cohen's d effect sizes, 95% CIs
 
-1. **Read agent instructions**:
-   ```bash
-   cat program.md
-   ```
+## Dataset
 
-2. **Start AI agent** (Claude/Codex/etc.):
-   ```
-   "Please read program.md and help me optimize the cardiovascular diagnosis model."
-   ```
+| Cohort | Source | n | Features | Imputation |
+|---|---|---|---|---|
+| Internal (training) | UCI Heart Disease (Cleveland) | 303 | 13 clinical features | Missing → 0 (silent) |
+| External (validation) | Kaggle Heart Disease | 918 | 13 clinical features | Missing → 0 (zero-padded) |
 
-3. **Monitor progress**:
-   ```bash
-   tail -f run.log
-   ```
+The critical distributional difference: `thal=0` has no valid clinical interpretation but appears in 35% of the external cohort, creating systematic OOD tokens for the Transformer.
 
-4. **Track results**:
-   ```bash
-   cat results_clinical.tsv
-   ```
-
-## 🏗️ Architecture Highlights
-
-- **GPT-style Transformer**: Decoder-only architecture with rotary positional embeddings
-- **Muon Optimizer**: Advanced second-order optimization for 2D parameters
-- **Value Embeddings**: Alternating layer enhancement mechanism
-- **Sliding Window Attention**: Efficient attention patterns (SSSL configuration)
-
-## 📚 Dataset
-
-Based on the UCI Heart Disease dataset:
-- 303 patient records
-- 13 clinical features (age, sex, chest pain type, blood pressure, cholesterol, etc.)
-- Binary classification task (presence/absence of heart disease)
-
-## 🤝 Contributing
-
-This project welcomes contributions! Areas for improvement:
-- Multi-dataset validation
-- Cross-validation implementation
-- Additional medical domains
-- Interpretability tools (SHAP, attention visualization)
-
-## 📝 Citation
-
-If you use this project in your research, please cite:
+## Citation
 
 ```bibtex
-@software{medical_automl,
-  author = {Zhanbingli},
-  title = {Generalizability Boundaries of Tabular-to-Text Transformers in Clinical Prediction: A Mechanistic Analysis of Specificity Collapse under Distribution Shift
-},
-  url = {https://github.com/Zhanbingli/medical-automl},
-  year = {2026}
+@article{li2026specificity,
+  author  = {Li, Zhanbing},
+  title   = {Specificity Collapse versus Calibration Drift: Contrasting Generalization Failure Modes of Tabular-to-Text Transformers and Large Language Models in Clinical Cardiovascular Prediction},
+  year    = {2026},
+  note    = {Under review},
+  url     = {https://github.com/Zhanbingli/medical-automl}
 }
 ```
 
-## 📄 License
+## License
 
-MIT License - see [LICENSE](LICENSE) file for details.
+MIT License — see [LICENSE](LICENSE) for details.
 
-This project is inspired by autoresearch concepts but represents independent development focused on medical applications.
+## Contact
 
-## 🙏 Acknowledgments
-
-- UCI Machine Learning Repository for the Heart Disease dataset
-- PyTorch team for the deep learning framework
-- rustbpe for high-performance tokenization
-
-## 📧 Contact
-
-For questions or collaboration:
-- GitHub Issues: https://github.com/Zhanbingli/medical-automl/issues
-- Author: Zhanbingli
+- **Author**: Zhanbing Li
+- **Email**: zhanbing2025@gmail.com
+- **ORCID**: 0009-0003-6067-2183
+- **GitHub Issues**: [https://github.com/Zhanbingli/medical-automl/issues](https://github.com/Zhanbingli/medical-automl/issues)
 
 ---
 

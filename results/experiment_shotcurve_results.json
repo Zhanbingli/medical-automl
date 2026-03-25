@@ -1,0 +1,197 @@
+{
+  "1": {
+    "uci_summary": {
+      "auc": {
+        "mean": 0.7338107012586179,
+        "std": 0.033909631112957944
+      },
+      "sensitivity": {
+        "mean": 0.914021164021164,
+        "std": 0.08314204971684874
+      },
+      "specificity": {
+        "mean": 0.28200757575757573,
+        "std": 0.1442585178505997
+      }
+    },
+    "uci_folds": [
+      {
+        "auc": 0.6785714285714285,
+        "sensitivity": 0.9642857142857143,
+        "specificity": 0.09090909090909091,
+        "n_failed": 0,
+        "elapsed_s": 74.0,
+        "fold": 0
+      },
+      {
+        "auc": 0.7380952380952381,
+        "sensitivity": 0.9642857142857143,
+        "specificity": 0.21212121212121213,
+        "n_failed": 0,
+        "elapsed_s": 73.5,
+        "fold": 1
+      },
+      {
+        "auc": 0.748917748917749,
+        "sensitivity": 0.9285714285714286,
+        "specificity": 0.2727272727272727,
+        "n_failed": 0,
+        "elapsed_s": 72.9,
+        "fold": 2
+      },
+      {
+        "auc": 0.7216610549943883,
+        "sensitivity": 0.9629629629629629,
+        "specificity": 0.30303030303030304,
+        "n_failed": 0,
+        "elapsed_s": 71.9,
+        "fold": 3
+      },
+      {
+        "auc": 0.7818080357142857,
+        "sensitivity": 0.75,
+        "specificity": 0.53125,
+        "n_failed": 0,
+        "elapsed_s": 70.0,
+        "fold": 4
+      }
+    ],
+    "kaggle": {
+      "auc": 0.7826507585942,
+      "sensitivity": 0.9232283464566929,
+      "specificity": 0.14878048780487804,
+      "n_failed": 0,
+      "elapsed_s": 1191.6
+    }
+  },
+  "3": {
+    "uci_summary": {
+      "auc": {
+        "mean": 0.6876366592512426,
+        "std": 0.055445405854589555
+      },
+      "sensitivity": {
+        "mean": 0.8640211640211639,
+        "std": 0.06101540869765173
+      },
+      "specificity": {
+        "mean": 0.37178030303030307,
+        "std": 0.11974071410095564
+      }
+    },
+    "uci_folds": [
+      {
+        "auc": 0.6926406926406926,
+        "sensitivity": 0.8571428571428571,
+        "specificity": 0.42424242424242425,
+        "n_failed": 0,
+        "elapsed_s": 102.3,
+        "fold": 0
+      },
+      {
+        "auc": 0.5800865800865801,
+        "sensitivity": 0.8928571428571429,
+        "specificity": 0.2727272727272727,
+        "n_failed": 0,
+        "elapsed_s": 104.0,
+        "fold": 1
+      },
+      {
+        "auc": 0.7115800865800865,
+        "sensitivity": 0.8214285714285714,
+        "specificity": 0.5757575757575758,
+        "n_failed": 0,
+        "elapsed_s": 101.6,
+        "fold": 2
+      },
+      {
+        "auc": 0.7345679012345678,
+        "sensitivity": 0.9629629629629629,
+        "specificity": 0.24242424242424243,
+        "n_failed": 0,
+        "elapsed_s": 101.0,
+        "fold": 3
+      },
+      {
+        "auc": 0.7193080357142858,
+        "sensitivity": 0.7857142857142857,
+        "specificity": 0.34375,
+        "n_failed": 0,
+        "elapsed_s": 101.3,
+        "fold": 4
+      }
+    ],
+    "kaggle": {
+      "auc": 0.6682830804686,
+      "sensitivity": 0.6771653543307087,
+      "specificity": 0.6024390243902439,
+      "n_failed": 0,
+      "elapsed_s": 1585.1
+    }
+  },
+  "10": {
+    "uci_summary": {
+      "auc": {
+        "mean": 0.7945254880150714,
+        "std": 0.033816286567161846
+      },
+      "sensitivity": {
+        "mean": 0.9711640211640212,
+        "std": 0.026801957972304627
+      },
+      "specificity": {
+        "mean": 0.31060606060606066,
+        "std": 0.09558672906416668
+      }
+    },
+    "uci_folds": [
+      {
+        "auc": 0.800865800865801,
+        "sensitivity": 1.0,
+        "specificity": 0.21212121212121213,
+        "n_failed": 0,
+        "elapsed_s": 150.5,
+        "fold": 0
+      },
+      {
+        "auc": 0.7516233766233766,
+        "sensitivity": 1.0,
+        "specificity": 0.24242424242424243,
+        "n_failed": 0,
+        "elapsed_s": 166.3,
+        "fold": 1
+      },
+      {
+        "auc": 0.8165584415584416,
+        "sensitivity": 0.9642857142857143,
+        "specificity": 0.45454545454545453,
+        "n_failed": 0,
+        "elapsed_s": 175.8,
+        "fold": 2
+      },
+      {
+        "auc": 0.7615039281705949,
+        "sensitivity": 0.9629629629629629,
+        "specificity": 0.3939393939393939,
+        "n_failed": 0,
+        "elapsed_s": 146.3,
+        "fold": 3
+      },
+      {
+        "auc": 0.8420758928571428,
+        "sensitivity": 0.9285714285714286,
+        "specificity": 0.25,
+        "n_failed": 0,
+        "elapsed_s": 145.4,
+        "fold": 4
+      }
+    ],
+    "kaggle": {
+      "auc": 0.6503672940272709,
+      "sensitivity": 0.8070866141732284,
+      "specificity": 0.3024390243902439,
+      "n_failed": 0,
+      "elapsed_s": 2294.1
+    }
+  }
+}
