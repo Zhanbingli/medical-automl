@@ -7,575 +7,381 @@
   <meta name="description" content="A clinical AI reliability case study comparing a tabular-to-text Transformer, prompted LLMs, and conventional baselines under external schema shift.">
   <style>
     :root {
-      --paper: #f8f4ea;
-      --ink: #1f1d1a;
-      --muted: #5f584f;
-      --line: rgba(31, 29, 26, 0.12);
-      --panel: rgba(255, 252, 245, 0.84);
-      --accent: #b44b32;
-      --accent-dark: #7a2d1a;
-      --accent-soft: #e7c2aa;
-      --sage: #7f8d66;
-      --shadow: 0 24px 60px rgba(78, 53, 31, 0.14);
-      --radius: 24px;
+      --bg: #f5f2eb;
+      --surface: #fffdf9;
+      --ink: #1d1b18;
+      --muted: #5d574f;
+      --line: #ddd4c7;
+      --accent: #8d3c28;
+      --accent-soft: #efe0d8;
     }
 
     * {
       box-sizing: border-box;
     }
 
-    html {
-      scroll-behavior: smooth;
-    }
-
     body {
       margin: 0;
+      background: var(--bg);
       color: var(--ink);
-      background:
-        radial-gradient(circle at top left, rgba(180, 75, 50, 0.18), transparent 28%),
-        radial-gradient(circle at 85% 20%, rgba(127, 141, 102, 0.18), transparent 24%),
-        linear-gradient(180deg, #f9f6ef 0%, #f2ebdf 100%);
-      font-family: "Avenir Next", "Segoe UI", "Helvetica Neue", sans-serif;
-      line-height: 1.6;
+      font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+      line-height: 1.65;
     }
 
     a {
-      color: inherit;
+      color: var(--accent);
     }
 
     .page {
-      width: min(1180px, calc(100vw - 32px));
+      width: min(900px, calc(100vw - 24px));
       margin: 0 auto;
-      padding: 28px 0 72px;
+      padding: 24px 0 56px;
     }
 
-    .topbar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 16px;
-      margin-bottom: 26px;
-      padding: 14px 18px;
+    .card {
+      background: var(--surface);
       border: 1px solid var(--line);
-      border-radius: 999px;
-      background: rgba(255, 251, 244, 0.72);
-      backdrop-filter: blur(12px);
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 18px;
     }
 
-    .topbar .brand {
-      font-size: 0.92rem;
+    .topnav {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 18px;
+    }
+
+    .topnav .label {
+      font-size: 0.9rem;
       letter-spacing: 0.08em;
       text-transform: uppercase;
       color: var(--muted);
     }
 
-    .nav {
+    .topnav .links {
       display: flex;
       flex-wrap: wrap;
       gap: 14px;
-    }
-
-    .nav a {
-      text-decoration: none;
-      color: var(--muted);
       font-size: 0.95rem;
     }
 
-    .hero {
-      display: grid;
-      grid-template-columns: 1.25fr 0.9fr;
-      gap: 24px;
-      align-items: stretch;
-      margin-bottom: 24px;
-    }
-
-    .hero-card,
-    .panel,
-    .figure-card {
-      border: 1px solid var(--line);
-      border-radius: var(--radius);
-      background: var(--panel);
-      box-shadow: var(--shadow);
-      backdrop-filter: blur(8px);
-    }
-
-    .hero-card {
-      padding: 34px;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .hero-card::after {
-      content: "";
-      position: absolute;
-      inset: auto -90px -100px auto;
-      width: 240px;
-      height: 240px;
-      border-radius: 50%;
-      background: radial-gradient(circle, rgba(180, 75, 50, 0.2), transparent 70%);
-    }
-
     .eyebrow {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 7px 12px;
+      display: inline-block;
+      padding: 6px 10px;
       border-radius: 999px;
-      background: rgba(180, 75, 50, 0.1);
-      color: var(--accent-dark);
-      font-size: 0.84rem;
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-size: 0.82rem;
       font-weight: 600;
-      letter-spacing: 0.03em;
+      letter-spacing: 0.04em;
       text-transform: uppercase;
     }
 
     h1,
     h2,
     h3 {
-      font-family: "Iowan Old Style", "Palatino Linotype", "Book Antiqua", Palatino, serif;
-      line-height: 1.06;
-      letter-spacing: -0.02em;
+      font-family: "Georgia", "Times New Roman", serif;
+      line-height: 1.12;
       margin: 0;
     }
 
     h1 {
-      margin-top: 18px;
-      font-size: clamp(2.6rem, 4.4vw, 4.8rem);
-      max-width: 12ch;
+      margin-top: 14px;
+      font-size: clamp(2.1rem, 5vw, 3.5rem);
     }
 
-    .subtitle {
-      margin: 18px 0 0;
-      max-width: 58ch;
-      font-size: 1.08rem;
+    h2 {
+      font-size: clamp(1.4rem, 3vw, 2rem);
+      margin-bottom: 12px;
+    }
+
+    h3 {
+      font-size: 1.15rem;
+      margin-bottom: 8px;
+    }
+
+    p {
+      margin: 0;
       color: var(--muted);
     }
 
-    .hero-links {
+    .lead {
+      margin-top: 16px;
+      font-size: 1.05rem;
+      max-width: 62ch;
+    }
+
+    .button-row {
       display: flex;
       flex-wrap: wrap;
-      gap: 12px;
-      margin-top: 26px;
+      gap: 10px;
+      margin-top: 20px;
     }
 
     .button {
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      min-height: 48px;
-      padding: 0 18px;
+      min-height: 44px;
+      padding: 0 16px;
       border-radius: 999px;
-      border: 1px solid transparent;
       text-decoration: none;
       font-weight: 600;
+      border: 1px solid var(--line);
+      background: #fff;
+      color: var(--ink);
     }
 
     .button.primary {
       background: var(--accent);
-      color: #fffaf5;
+      border-color: var(--accent);
+      color: #fff;
     }
 
-    .button.secondary {
-      border-color: var(--line);
-      background: rgba(255, 255, 255, 0.45);
-      color: var(--ink);
-    }
-
-    .meta-card {
-      padding: 28px;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      gap: 18px;
-    }
-
-    .meta-block + .meta-block {
-      padding-top: 16px;
-      border-top: 1px solid var(--line);
-    }
-
-    .meta-label {
-      font-size: 0.82rem;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      color: var(--muted);
-      margin-bottom: 6px;
-    }
-
-    .meta-value {
-      font-size: 1rem;
-    }
-
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(12, 1fr);
-      gap: 20px;
-      margin-top: 20px;
-    }
-
-    .panel {
-      padding: 26px;
-    }
-
-    .span-7 { grid-column: span 7; }
-    .span-5 { grid-column: span 5; }
-    .span-4 { grid-column: span 4; }
-    .span-8 { grid-column: span 8; }
-    .span-12 { grid-column: span 12; }
-
-    .panel h2 {
-      font-size: clamp(1.5rem, 2vw, 2rem);
-      margin-bottom: 14px;
-    }
-
-    .panel p {
-      margin: 0;
-      color: var(--muted);
-    }
-
-    .bullet-list {
-      list-style: none;
-      padding: 0;
-      margin: 16px 0 0;
-      display: grid;
-      gap: 12px;
-    }
-
-    .bullet-list li {
-      padding-left: 16px;
-      position: relative;
-      color: var(--muted);
-    }
-
-    .bullet-list li::before {
-      content: "";
-      position: absolute;
-      left: 0;
-      top: 0.72em;
-      width: 7px;
-      height: 7px;
-      border-radius: 50%;
-      background: var(--accent);
-      transform: translateY(-50%);
-    }
-
-    .stat-grid {
+    .meta {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 14px;
       margin-top: 18px;
     }
 
-    .stat {
-      padding: 18px;
-      border-radius: 18px;
-      background: rgba(255, 255, 255, 0.56);
+    .meta-item {
+      padding: 14px 16px;
       border: 1px solid var(--line);
+      border-radius: 12px;
+      background: #fff;
     }
 
-    .stat .label {
-      font-size: 0.82rem;
-      text-transform: uppercase;
-      letter-spacing: 0.07em;
+    .meta-item strong {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 0.9rem;
+      color: var(--ink);
+    }
+
+    .bullets {
+      margin: 0;
+      padding-left: 20px;
       color: var(--muted);
     }
 
-    .stat .value {
+    .bullets li + li {
       margin-top: 8px;
-      font-size: 1.5rem;
-      font-weight: 700;
-      color: var(--accent-dark);
     }
 
-    .figure-grid {
+    .stats {
       display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 20px;
-      margin-top: 18px;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 14px;
     }
 
-    .figure-card {
+    .stat {
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: #fff;
+    }
+
+    .stat .name {
+      font-size: 0.82rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .stat .value {
+      margin-top: 6px;
+      font-size: 1.35rem;
+      font-weight: 700;
+      color: var(--accent);
+    }
+
+    .figure {
+      margin-top: 14px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
       overflow: hidden;
+      background: #fff;
     }
 
-    .figure-card img {
+    .figure img {
       display: block;
       width: 100%;
-      aspect-ratio: 16 / 10;
-      object-fit: cover;
+      height: auto;
+      object-fit: contain;
       background: #fff;
     }
 
     .figure-copy {
-      padding: 18px;
-    }
-
-    .figure-copy h3 {
-      font-size: 1.2rem;
-      margin-bottom: 8px;
-    }
-
-    .figure-copy p {
-      margin: 0;
-      color: var(--muted);
-    }
-
-    .tag-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-top: 18px;
-    }
-
-    .tag {
-      padding: 8px 12px;
-      border-radius: 999px;
-      background: rgba(127, 141, 102, 0.12);
-      border: 1px solid rgba(127, 141, 102, 0.18);
-      color: #465139;
-      font-size: 0.92rem;
+      padding: 14px 16px 16px;
+      border-top: 1px solid var(--line);
     }
 
     .footer {
-      margin-top: 26px;
-      padding: 24px 28px;
-      border: 1px solid var(--line);
-      border-radius: var(--radius);
-      background: rgba(255, 252, 246, 0.82);
+      font-size: 0.95rem;
       color: var(--muted);
     }
 
-    .footer strong {
-      color: var(--ink);
-    }
-
-    @media (max-width: 980px) {
-      .hero {
+    @media (max-width: 760px) {
+      .meta,
+      .stats {
         grid-template-columns: 1fr;
       }
 
-      .span-7,
-      .span-5,
-      .span-4,
-      .span-8 {
-        grid-column: span 12;
-      }
-    }
-
-    @media (max-width: 700px) {
       .page {
-        width: min(100vw - 20px, 1180px);
+        width: min(100vw - 16px, 900px);
         padding-top: 16px;
       }
 
-      .topbar {
-        border-radius: 24px;
-        align-items: flex-start;
-        flex-direction: column;
-      }
-
-      .hero-card,
-      .meta-card,
-      .panel {
-        padding: 22px;
-      }
-
-      .figure-grid,
-      .stat-grid {
-        grid-template-columns: 1fr;
-      }
-
-      h1 {
-        max-width: 100%;
+      .card {
+        padding: 18px;
       }
     }
   </style>
 </head>
 <body>
   <div class="page">
-    <div class="topbar">
-      <div class="brand">Clinical AI Reliability Case Study</div>
-      <div class="nav">
+    <div class="topnav card">
+      <div class="label">Clinical AI Reliability Project</div>
+      <div class="links">
         <a href="#summary">Summary</a>
-        <a href="#findings">Findings</a>
+        <a href="#results">Results</a>
         <a href="#figures">Figures</a>
         <a href="#links">Links</a>
       </div>
     </div>
 
-    <section class="hero">
-      <div class="hero-card">
-        <div class="eyebrow">Preprint Project</div>
-        <h1>Specificity Collapse and Calibration Drift under External Schema Shift</h1>
-        <p class="subtitle">
-          A public-facing research page for a clinical prediction case study comparing a tabular-to-text Transformer,
-          prompted LLMs, and strong tabular baselines under external schema alignment shift.
-        </p>
-        <div class="hero-links">
-          <a class="button primary" href="docs/manuscript_draft.pdf">Read Draft PDF</a>
-          <a class="button secondary" href="https://github.com/Zhanbingli/medical-automl">View Repository</a>
-          <a class="button secondary" href="docs/osf_preprint_metadata.md">OSF Metadata</a>
-        </div>
-      </div>
-
-      <aside class="hero-card meta-card" id="links">
-        <div class="meta-block">
-          <div class="meta-label">Author</div>
-          <div class="meta-value">Zhanbing Li</div>
-        </div>
-        <div class="meta-block">
-          <div class="meta-label">Positioning</div>
-          <div class="meta-value">Independent empirical research in clinical AI reliability, distribution shift, and model failure analysis.</div>
-        </div>
-        <div class="meta-block">
-          <div class="meta-label">Current Public Assets</div>
-          <div class="meta-value">
-            <a href="docs/manuscript_draft.pdf">Working manuscript PDF</a><br>
-            <a href="docs/osf_submission_checklist.md">OSF submission checklist</a><br>
-            <a href="https://github.com/Zhanbingli/medical-automl">GitHub repository</a>
-          </div>
-        </div>
-        <div class="meta-block">
-          <div class="meta-label">Preprint Status</div>
-          <div class="meta-value">OSF route prepared. DOI pending.</div>
-        </div>
-      </aside>
-    </section>
-
-    <div class="grid" id="summary">
-      <section class="panel span-7">
-        <h2>What This Project Studies</h2>
-        <p>
-          The core question is simple: when a clinical prediction pipeline leaves its training distribution, what kind
-          of failure appears first, and how much of that failure comes from model class versus representation design?
-        </p>
-        <ul class="bullet-list">
-          <li>Internal data: UCI Heart Disease (`n=303`), 5-fold stratified cross-validation.</li>
-          <li>External data: Kaggle Heart Failure Prediction (`n=918`), aligned to the UCI schema.</li>
-          <li>Compared systems: custom tabular-to-text Transformer, Qwen3.5-2B under 0/1/3/5/10-shot prompting, and eight tabular baselines.</li>
-          <li>Primary outcome: external reliability under schema mismatch and missing-value ambiguity.</li>
-        </ul>
-      </section>
-
-      <section class="panel span-5">
-        <h2>Important Constraint</h2>
-        <p>
-          This is a case study, not a perfectly controlled architecture bake-off. The external cohort does not natively
-          contain the UCI `ca` and `thal` variables, the Transformer consumes a Chinese serialized template, and the LLM
-          consumes an English narrative with explicit missing-value wording.
-        </p>
-        <div class="tag-row">
-          <div class="tag">schema shift</div>
-          <div class="tag">missingness semantics</div>
-          <div class="tag">external validation</div>
-          <div class="tag">failure analysis</div>
-        </div>
-      </section>
-    </div>
-
-    <div class="grid" id="findings">
-      <section class="panel span-8">
-        <h2>Main Findings</h2>
-        <ul class="bullet-list">
-          <li>The custom Transformer performs reasonably internally, then loses specificity on the aligned external cohort.</li>
-          <li>The LLM does not look stable at zero-shot; its main issue is calibration, not immediate specificity preservation.</li>
-          <li>Five-shot prompting gives the strongest external neural profile in this repo.</li>
-          <li>Attention comparisons suggest that the aligned `thal=0` token disrupts routing, but this remains probe-level evidence.</li>
-          <li>Ablation results suggest tokenization familiarity can matter more than statistically conventional imputation.</li>
-        </ul>
-      </section>
-
-      <section class="panel span-4">
-        <h2>Numerical Snapshot</h2>
-        <div class="stat-grid">
-          <div class="stat">
-            <div class="label">Transformer Internal AUC</div>
-            <div class="value">0.762</div>
-          </div>
-          <div class="stat">
-            <div class="label">Transformer External AUC</div>
-            <div class="value">0.624</div>
-          </div>
-          <div class="stat">
-            <div class="label">Transformer Spec Shift</div>
-            <div class="value">-0.156</div>
-          </div>
-          <div class="stat">
-            <div class="label">LLM 5-shot External AUC</div>
-            <div class="value">0.739</div>
-          </div>
-        </div>
-      </section>
-    </div>
-
-    <section class="panel" id="figures">
-      <h2>Core Figures</h2>
-      <p>
-        These figures carry the argument of the project more clearly than long prose: one for the overall pipeline,
-        one for the generalization gap, one for the attention probe, and one for the shot-count curve.
+    <section class="card">
+      <div class="eyebrow">Preprint Project</div>
+      <h1>Specificity Collapse and Calibration Drift under External Schema Shift</h1>
+      <p class="lead">
+        A compact project page for a clinical prediction case study comparing a tabular-to-text Transformer,
+        prompted LLMs, and strong tabular baselines under external schema alignment shift.
       </p>
-
-      <div class="figure-grid">
-        <article class="figure-card">
-          <img src="figures/figure1_architecture.png" alt="System architecture figure">
-          <div class="figure-copy">
-            <h3>System Setup</h3>
-            <p>Overview of the tabular-to-text Transformer path, the prompted LLM path, and the internal versus external evaluation design.</p>
-          </div>
-        </article>
-
-        <article class="figure-card">
-          <img src="figures/llm_generalization_gap.png" alt="Generalization gap figure">
-          <div class="figure-copy">
-            <h3>Generalization Gap</h3>
-            <p>Internal versus external performance shows the Transformer's specificity drop and the comparatively stronger 5-shot LLM external profile.</p>
-          </div>
-        </article>
-
-        <article class="figure-card">
-          <img src="figures/attention_ood_comparison.png" alt="Attention comparison figure">
-          <div class="figure-copy">
-            <h3>Attention Probe</h3>
-            <p>A controlled comparison suggests the aligned external `thal=0` token can redirect attention away from a clinically informative field.</p>
-          </div>
-        </article>
-
-        <article class="figure-card">
-          <img src="figures/llm_shotcurve.png" alt="LLM shot curve figure">
-          <div class="figure-copy">
-            <h3>Shot-Curve Behavior</h3>
-            <p>The prompted LLM follows a non-monotonic curve: zero-shot bias, improved 5-shot calibration, then degradation again at 10-shot.</p>
-          </div>
-        </article>
+      <div class="button-row" id="links">
+        <a class="button primary" href="docs/manuscript_draft.pdf">Read Draft PDF</a>
+        <a class="button" href="https://github.com/Zhanbingli/medical-automl">GitHub Repository</a>
+        <a class="button" href="docs/osf_preprint_metadata.md">OSF Metadata</a>
+        <a class="button" href="docs/osf_submission_checklist.md">OSF Checklist</a>
+      </div>
+      <div class="meta">
+        <div class="meta-item">
+          <strong>Author</strong>
+          Zhanbing Li
+        </div>
+        <div class="meta-item">
+          <strong>Current Status</strong>
+          OSF preprint package prepared. DOI pending.
+        </div>
+        <div class="meta-item">
+          <strong>Positioning</strong>
+          Independent empirical research in clinical AI reliability, distribution shift, and model failure analysis.
+        </div>
+        <div class="meta-item">
+          <strong>Key Constraint</strong>
+          This is a case study, not a perfectly controlled architecture comparison.
+        </div>
       </div>
     </section>
 
-    <div class="grid">
-      <section class="panel span-6">
-        <h2>Why This Matters</h2>
-        <p>
-          The practical lesson is not “use one model family everywhere.” It is that external reliability in clinical AI
-          is shaped by representation details: schema alignment, missing-value wording, serialization language, and how
-          much distributional structure a pipeline hard-codes during training or in context.
-        </p>
-      </section>
+    <section class="card" id="summary">
+      <h2>Summary</h2>
+      <p>
+        The project asks how different clinical prediction pipelines fail when they leave their training distribution.
+        Internal evaluation uses UCI Heart Disease (`n=303`). External evaluation uses the Kaggle Heart Failure
+        Prediction dataset (`n=918`), aligned to the UCI schema by introducing `ca=0` and `thal=0`.
+      </p>
+      <ul class="bullets" style="margin-top:14px;">
+        <li>The custom Transformer uses a fixed Chinese serialized template.</li>
+        <li>The LLM uses an English narrative prompt and sees `thal=0` as "not available".</li>
+        <li>The main output is a reliability-oriented case study about schema shift, missingness semantics, and external behavior.</li>
+      </ul>
+    </section>
 
-      <section class="panel span-6">
-        <h2>What Comes Next</h2>
-        <ul class="bullet-list">
-          <li>Upload the preprint through OSF and attach the DOI here.</li>
-          <li>Run fairer controls with matched serialization and explicit missing tokens.</li>
-          <li>Add a second project on LLM reliability or safety to extend the portfolio beyond a single case study.</li>
-        </ul>
-      </section>
-    </div>
+    <section class="card" id="results">
+      <h2>Main Results</h2>
+      <ul class="bullets">
+        <li>The custom Transformer is acceptable internally, then loses specificity on the aligned external cohort.</li>
+        <li>The LLM does not look reliable at zero-shot; its main issue is calibration rather than immediate external robustness.</li>
+        <li>Five-shot prompting gives the strongest external neural profile in this repository.</li>
+        <li>Attention comparisons suggest that the aligned `thal=0` token can disrupt routing, but this remains probe-level evidence.</li>
+        <li>Ablation results suggest tokenization familiarity can matter more than statistically conventional imputation.</li>
+      </ul>
+      <div class="stats">
+        <div class="stat">
+          <div class="name">Transformer Internal AUC</div>
+          <div class="value">0.762</div>
+        </div>
+        <div class="stat">
+          <div class="name">Transformer External AUC</div>
+          <div class="value">0.624</div>
+        </div>
+        <div class="stat">
+          <div class="name">Transformer Spec Shift</div>
+          <div class="value">-0.156</div>
+        </div>
+        <div class="stat">
+          <div class="name">LLM 5-shot External AUC</div>
+          <div class="value">0.739</div>
+        </div>
+      </div>
+    </section>
 
-    <footer class="footer">
+    <section class="card" id="figures">
+      <h2>Core Figures</h2>
+      <p>Each figure is shown at full width without cropping.</p>
+
+      <div class="figure">
+        <img src="figures/figure1_architecture.png" alt="System architecture figure">
+        <div class="figure-copy">
+          <h3>System Setup</h3>
+          <p>Overview of the Transformer path, the prompted LLM path, and the internal versus external evaluation design.</p>
+        </div>
+      </div>
+
+      <div class="figure">
+        <img src="figures/llm_generalization_gap.png" alt="Generalization gap figure">
+        <div class="figure-copy">
+          <h3>Generalization Gap</h3>
+          <p>Internal versus external performance shows the Transformer's specificity drop and the stronger 5-shot LLM external profile.</p>
+        </div>
+      </div>
+
+      <div class="figure">
+        <img src="figures/attention_ood_comparison.png" alt="Attention comparison figure">
+        <div class="figure-copy">
+          <h3>Attention Probe</h3>
+          <p>A controlled comparison suggests the aligned external `thal=0` token can redirect attention away from a clinically informative field.</p>
+        </div>
+      </div>
+
+      <div class="figure">
+        <img src="figures/llm_shotcurve.png" alt="LLM shot curve figure">
+        <div class="figure-copy">
+          <h3>Shot-Curve Behavior</h3>
+          <p>The prompted LLM follows a non-monotonic curve: zero-shot bias, improved 5-shot calibration, then degradation again at 10-shot.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>What This Page Is For</h2>
+      <p>
+        This page is meant to function as a clean public landing page for the project: one title, one summary, four figures,
+        and direct links to the manuscript draft, repo, and OSF submission materials.
+      </p>
+    </section>
+
+    <section class="card footer">
       <strong>Contact:</strong> zhanbing2025@gmail.com<br>
       <strong>ORCID:</strong> 0009-0003-6067-2183<br>
-      <strong>Repository:</strong> <a href="https://github.com/Zhanbingli/medical-automl">github.com/Zhanbingli/medical-automl</a><br>
-      <strong>Note:</strong> this page reflects the current public preprint framing and intentionally presents the work as a reproducible case study rather than a final architecture verdict.
-    </footer>
+      <strong>Repository:</strong> <a href="https://github.com/Zhanbingli/medical-automl">github.com/Zhanbingli/medical-automl</a>
+    </section>
   </div>
 </body>
 </html>
