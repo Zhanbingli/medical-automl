@@ -47,7 +47,7 @@ Because of those choices, this repository should be read as a **stress test / ca
 - Project page: [index.html](index.html)
 - OSF metadata: [docs/osf_preprint_metadata.md](docs/osf_preprint_metadata.md)
 - OSF upload checklist: [docs/osf_submission_checklist.md](docs/osf_submission_checklist.md)
-- Working manuscript: [docs/manuscript_draft.md](docs/manuscript_draft.md)
+- Public preprint PDF: [docs/li_2026_clinical_prediction_schema_shift_preprint.pdf](docs/li_2026_clinical_prediction_schema_shift_preprint.pdf)
 
 ## Repository Structure
 

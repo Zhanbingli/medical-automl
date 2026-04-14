@@ -2,7 +2,7 @@
 
 ## Before Upload
 
-- Export the manuscript PDF from [docs/manuscript_draft.md](/Users/lizhanbing12/contri_pt/autoresearch-macos/docs/manuscript_draft.md:1)
+- Use the public manuscript PDF at [docs/li_2026_clinical_prediction_schema_shift_preprint.pdf](/Users/lizhanbing12/contri_pt/autoresearch-macos/docs/li_2026_clinical_prediction_schema_shift_preprint.pdf:1)
 - Use a stable filename such as `li_2026_clinical_prediction_schema_shift_preprint.pdf`
 - Verify the title in the PDF matches [docs/osf_preprint_metadata.md](/Users/lizhanbing12/contri_pt/autoresearch-macos/docs/osf_preprint_metadata.md:1)
 - Confirm author name, affiliation, ORCID, and email are correct

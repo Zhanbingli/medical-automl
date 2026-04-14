@@ -30,7 +30,7 @@ jobs:
           mkdir -p _site/docs _site/figures
           cp index.html _site/index.html
           cp README.md _site/README.md
-          cp docs/manuscript_draft.pdf _site/docs/manuscript_draft.pdf
+          cp docs/li_2026_clinical_prediction_schema_shift_preprint.pdf _site/docs/li_2026_clinical_prediction_schema_shift_preprint.pdf
           cp docs/osf_preprint_metadata.md _site/docs/osf_preprint_metadata.md
           cp docs/osf_submission_checklist.md _site/docs/osf_submission_checklist.md
           cp figures/figure1_architecture.png _site/figures/figure1_architecture.png
