@@ -725,6 +725,7 @@ dependencies = [
     { name = "seaborn" },
     { name = "tiktoken" },
     { name = "torch" },
+    { name = "tqdm" },
     { name = "xgboost" },
 ]
 
@@ -743,6 +744,7 @@ requires-dist = [
     { name = "seaborn", specifier = ">=0.13.2" },
     { name = "tiktoken", specifier = ">=0.11.0" },
     { name = "torch", specifier = "==2.6.0" },
+    { name = "tqdm", specifier = ">=4.66.0" },
     { name = "xgboost", specifier = ">=3.2.0" },
 ]
 

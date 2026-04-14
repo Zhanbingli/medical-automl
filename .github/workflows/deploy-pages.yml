@@ -1,0 +1,55 @@
+name: Deploy GitHub Pages
+
+on:
+  push:
+    branches:
+      - autoresearch/clinical_auc
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+
+      - name: Prepare site artifact
+        run: |
+          mkdir -p _site/docs _site/figures
+          cp index.html _site/index.html
+          cp README.md _site/README.md
+          cp docs/manuscript_draft.pdf _site/docs/manuscript_draft.pdf
+          cp docs/osf_preprint_metadata.md _site/docs/osf_preprint_metadata.md
+          cp docs/osf_submission_checklist.md _site/docs/osf_submission_checklist.md
+          cp figures/figure1_architecture.png _site/figures/figure1_architecture.png
+          cp figures/llm_generalization_gap.png _site/figures/llm_generalization_gap.png
+          cp figures/attention_ood_comparison.png _site/figures/attention_ood_comparison.png
+          cp figures/llm_shotcurve.png _site/figures/llm_shotcurve.png
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

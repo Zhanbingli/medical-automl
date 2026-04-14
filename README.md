@@ -1,27 +1,53 @@
-# Specificity Collapse versus Calibration Drift: Contrasting Generalization Failure Modes of Tabular-to-Text Transformers and LLMs in Clinical Cardiovascular Prediction
+# Specificity Collapse and Calibration Drift under External Schema Shift
 
-> **Manuscript Status**: This repository contains the official code, data, and experimental results for the paper *"Specificity Collapse versus Calibration Drift: Contrasting Generalization Failure Modes of Tabular-to-Text Transformers and Large Language Models in Clinical Cardiovascular Prediction"*. The manuscript has been submitted for publication.
+> **Project status**: public research repository and preprint package in preparation.
 
-## Overview
+## What This Project Asks
 
-This study characterizes and contrasts the generalization failure modes of:
-1. A custom **GPT-style tabular-to-text Transformer** trained from scratch on structured clinical data
-2. A locally deployed **Large Language Model (Qwen3.5-2B)** using 0/1/3/5/10-shot in-context learning
-3. **Eight traditional ML baselines** (Random Forest, XGBoost, Logistic Regression, SVM, Gradient Boosting, MLP, ResNet, TabNet)
+How do different clinical prediction pipelines fail when moved off their training distribution?
 
-All models are trained on the UCI Heart Disease dataset (n=303) and externally validated on an independent Kaggle cohort (n=918) with systematic imputation differences.
+This repository studies that question in a small clinical prediction setting by comparing:
+1. A custom **GPT-style tabular-to-text Transformer** trained from scratch on serialized clinical records
+2. A locally deployed **LLM (Qwen3.5-2B)** using 0/1/3/5/10-shot in-context learning
+3. **Eight tabular baselines** (Random Forest, XGBoost, Logistic Regression, SVM, Gradient Boosting, MLP, ResNet, TabNet)
 
-## Key Findings
+The main outcome is not a leaderboard claim. It is an **empirical reliability case study** about how representation choice, schema mismatch, and missing-value encoding affect external behavior.
 
-| Model / Paradigm | Internal CV (AUC) | External Validation (AUC) | Specificity Change |
+## What Was Actually Tested
+
+- Internal training/evaluation uses the UCI Heart Disease dataset (`n=303`).
+- External evaluation uses the Kaggle Heart Failure Prediction dataset (`n=918`).
+- The external dataset does **not** natively contain the UCI `ca` and `thal` variables.
+- To run UCI-trained models without retraining, the repo aligns the external schema by introducing `ca=0` and `thal=0` for every external record.
+- The custom Transformer consumes a **Chinese serialized template**.
+- The LLM consumes an **English natural-language rendering** and sees `thal=0` as `"not available"`.
+
+Because of those choices, this repository should be read as a **stress test / case study**, not as a perfectly controlled architecture comparison.
+
+## Main Findings
+
+| Model / Paradigm | Internal CV (AUC) | External Validation (AUC) | External Behavior |
 |---|---|---|---|
-| Random Forest (Baseline) | 0.911 ± 0.024 | 0.891 ± 0.042 | Maintained (89.1%) |
-| Logistic Regression | 0.912 ± 0.018 | — | Maintained |
-| Tabular-to-Text Transformer | 0.762 ± 0.070 | 0.624 ± 0.033 | **Collapsed** (81.1% → 65.6%) |
-| LLM 0-shot (Qwen3.5-2B) | 0.656 ± 0.058 | — | Positive bias (31.1%) |
-| LLM 5-shot (Qwen3.5-2B) | 0.764 ± 0.030 | 0.627 (Δ=+0.041) | **Most stable generalization** |
+| Random Forest (Baseline) | 0.911 ± 0.024 | 0.891 ± 0.042 | Stable |
+| Logistic Regression | 0.912 ± 0.018 | — | Strong internal baseline |
+| Tabular-to-Text Transformer | 0.762 ± 0.070 | 0.624 ± 0.033 | Specificity drop |
+| LLM 0-shot (Qwen3.5-2B) | 0.656 ± 0.058 | 0.597 | Strong positive bias |
+| LLM 5-shot (Qwen3.5-2B) | 0.755 ± 0.030 | 0.739 | Best external neural profile |
 
-**Conclusion**: The custom Transformer exhibits *Specificity Collapse* due to OOD token-induced attention disruption, while the LLM exhibits *calibration drift* correctable through 5-shot in-context learning. The 5-shot LLM achieves deployment-stable specificity without retraining.
+## Key Limitations
+
+- The external cohort is not a native 13-feature replication of UCI.
+- Transformer and LLM do not receive identical surface-form inputs.
+- Missingness is encoded differently across the two neural pipelines.
+- Baseline preprocessing differs from the Transformer preprocessing in the current repo.
+- The study is small and should be treated as hypothesis-generating.
+
+## Preprint Release Files
+
+- Project page: [index.html](index.html)
+- OSF metadata: [docs/osf_preprint_metadata.md](docs/osf_preprint_metadata.md)
+- OSF upload checklist: [docs/osf_submission_checklist.md](docs/osf_submission_checklist.md)
+- Working manuscript: [docs/manuscript_draft.md](docs/manuscript_draft.md)
 
 ## Repository Structure
 
@@ -142,14 +168,14 @@ uv run python scripts/plot_generaliza.py
 ## Methods Summary
 
 ### Tabular-to-Text Pipeline
-Structured patient records → English clinical narrative → BPE tokenization (vocab=8,192) → GPT-style Transformer with rotary positional embeddings.
+Structured patient records → fixed Chinese serialized template → BPE tokenization (vocab=8,192) → GPT-style Transformer with rotary positional embeddings.
 
 ### LLM In-Context Learning
 Patient records → English narrative → Qwen3.5-2B via Ollama → JSON probability output → threshold at 0.5. N-shot examples sampled with balanced positive/negative cases (seed=42).
 
 ### Evaluation Protocol
 - **Internal**: 5-fold stratified CV (StratifiedKFold, seed=42) — all models use identical splits
-- **External**: Independent Kaggle cohort (n=918) with systematic zero-padding imputation
+- **External**: Aligned Kaggle cohort (n=918) where missing UCI-only fields `ca`/`thal` are introduced as schema-alignment variables and set to `0`
 - **Statistics**: Paired t-tests with Bonferroni correction, Cohen's d effect sizes, 95% CIs
 
 ## Dataset
@@ -157,18 +183,18 @@ Patient records → English narrative → Qwen3.5-2B via Ollama → JSON probabi
 | Cohort | Source | n | Features | Imputation |
 |---|---|---|---|---|
 | Internal (training) | UCI Heart Disease (Cleveland) | 303 | 13 clinical features | Missing → 0 (silent) |
-| External (validation) | Kaggle Heart Disease | 918 | 13 clinical features | Missing → 0 (zero-padded) |
+| External (validation) | Kaggle Heart Failure Prediction | 918 | 11 native features + 2 aligned fields | `ca=0`, `thal=0` introduced to match UCI schema |
 
-The critical distributional difference: `thal=0` has no valid clinical interpretation but appears in 35% of the external cohort, creating systematic OOD tokens for the Transformer.
+The critical external stressor is not a naturally matched 13-feature replication, but an aligned schema shift: the external dataset lacks `ca` and `thal`, so those fields are synthetically introduced for compatibility with UCI-trained models. This makes `thal=0` an especially important out-of-distribution token for the Transformer pipeline.
 
 ## Citation
 
 ```bibtex
-@article{li2026specificity,
+@misc{li2026specificity,
   author  = {Li, Zhanbing},
-  title   = {Specificity Collapse versus Calibration Drift: Contrasting Generalization Failure Modes of Tabular-to-Text Transformers and Large Language Models in Clinical Cardiovascular Prediction},
+  title   = {Specificity Collapse and Calibration Drift under External Schema Shift: An Empirical Case Study of Tabular-to-Text Transformers and Large Language Models in Clinical Prediction},
   year    = {2026},
-  note    = {Submitted},
+  note    = {Preprint in preparation},
   url     = {https://github.com/Zhanbingli/medical-automl}
 }
 ```
