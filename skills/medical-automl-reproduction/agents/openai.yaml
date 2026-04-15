@@ -1,0 +1,7 @@
+interface:
+  display_name: "Medical AutoML Repro"
+  short_description: "Reproduce and audit this repo's experiments"
+  default_prompt: "Use $medical-automl-reproduction to reproduce or verify the experiments in this repository."
+
+policy:
+  allow_implicit_invocation: true
