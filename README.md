@@ -1,6 +1,8 @@
 # Specificity Collapse and Calibration Drift under External Schema Shift
 
-> **Project status**: public research repository and preprint package in preparation.
+> **Project status**: public research repository and preprint published on Zenodo — [doi.org/10.5281/zenodo.20611423](https://doi.org/10.5281/zenodo.20611423)
+
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.20611423.svg)](https://doi.org/10.5281/zenodo.20611423)
 
 ## What This Project Asks
 
@@ -44,9 +46,8 @@ Because of those choices, this repository should be read as a **stress test / ca
 
 ## Preprint Release Files
 
+- Zenodo record (DOI): [doi.org/10.5281/zenodo.20611423](https://doi.org/10.5281/zenodo.20611423)
 - Project page: [index.html](index.html)
-- OSF metadata: [docs/osf_preprint_metadata.md](docs/osf_preprint_metadata.md)
-- OSF upload checklist: [docs/osf_submission_checklist.md](docs/osf_submission_checklist.md)
 - Public preprint PDF: [docs/li_2026_clinical_prediction_schema_shift_preprint.pdf](docs/li_2026_clinical_prediction_schema_shift_preprint.pdf)
 
 ## Repository Structure
@@ -191,11 +192,12 @@ The critical external stressor is not a naturally matched 13-feature replication
 
 ```bibtex
 @misc{li2026specificity,
-  author  = {Li, Zhanbing},
-  title   = {Specificity Collapse and Calibration Drift under External Schema Shift: An Empirical Case Study of Tabular-to-Text Transformers and Large Language Models in Clinical Prediction},
-  year    = {2026},
-  note    = {Preprint in preparation},
-  url     = {https://github.com/Zhanbingli/medical-automl}
+  author       = {Li, Zhanbing},
+  title        = {Specificity Collapse and Calibration Drift under External Schema Shift: An Empirical Case Study of Tabular-to-Text Transformers and Large Language Models in Clinical Prediction},
+  year         = {2026},
+  publisher    = {Zenodo},
+  doi          = {10.5281/zenodo.20611423},
+  url          = {https://doi.org/10.5281/zenodo.20611423}
 }
 ```
 
